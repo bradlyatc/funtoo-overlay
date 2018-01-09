@@ -10,14 +10,13 @@ DESCRIPTION="A modern, hackable, featureful, OpenGL based terminal emulator"
 HOMEPAGE="https://github.com/kovidgoyal/kitty"
 SRC_URI="https://github.com/kovidgoyal/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
-IUSE="X imagemagick pillow wayland"
+IUSE="X imagemagick pillow wayland debug"
 
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="*"
 
-DEPEND="${PYTHON_DEPS}
-	dev-libs/libunistring
+CDEPEND="dev-libs/libunistring
 	media-libs/fontconfig
 	media-libs/freetype
 	x11-libs/libXcursor
@@ -25,7 +24,8 @@ DEPEND="${PYTHON_DEPS}
 	x11-libs/libXinerama
 	x11-libs/libxkbcommon
 	>=media-libs/harfbuzz-1.5.0
-	media-libs/libpng:*
+	media-libs/libpng:*"
+DEPEND="${PYTHON_DEPS}
 	sys-libs/zlib
 	virtual/pkgconfig
 	wayland? ( >=dev-libs/wayland-protocols-1.6 )"
@@ -35,18 +35,41 @@ RDEPEND="X? ( x11-apps/xrdb x11-misc/xsel )
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 
-src_compile() {
-	python_setup
-	python setup.py linux-package
+src_prepare() {
+	default
+	##remove unwanted -Werror if not debug build
+	if use !debug; then
+		sed -i -e 's/-Werror//g' setup.py || die
+	fi
+	##substitute hard coded -O with user controlled
+	user_flag="$(get-flag -O)"
+	sed -i -e 's/-O3/${user_flag}/g' setup.py || die
+}
+ 
+python_compile() {
+	##check for debug build. call esetup.py to use correct system python.
+	#linux-package is config option for linux packagers bundling. --prefix
+	#can be set to place compiled files in ${ED} but there is no install script
+	if use debug; then
+		einfo
+		elog "USE=debug detected: **DEBUGGING BUILD ENABLED**"
+		einfo
+		esetup.py -v --debug linux-package
+	else
+		esetup.py -v linux-package
+	fi
 }
 
 src_install() {
+	##manually install package, using --prefix doesn't play well with ebuild
 	dobin linux-package/bin/kitty
 	insinto /usr/lib
 	doins -r linux-package/lib/kitty
 	insinto /usr/share
 	doins -r linux-package/share/{applications,icons,terminfo,}
-	dodoc *.asciidoc
+	
+	DOCS=( *.asciidoc )
+	einstalldocs
 }
 pkg_postinst() {
 	gnome2_icon_cache_update
