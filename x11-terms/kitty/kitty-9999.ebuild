@@ -70,6 +70,10 @@ src_prepare() {
 }
 
 python_compile() {
+	##check for debug or sanitize builds. sanitize only works with clang for now.
+	#call esetup.py to use correct system python. linux-package is config option
+	#for linux packagers bundling. --prefix can be set place compiled file in
+	#${ED} but there is no install script.
 	if use debug; then
 		einfo
 		elog "USE=debug detected: **DEBUG BUILD ENABLED**"
