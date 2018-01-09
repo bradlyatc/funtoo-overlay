@@ -43,7 +43,7 @@ src_prepare() {
 	fi
 	##substitute hard coded -O with user controlled
 	user_flag="$(get-flag -O)"
-	sed -i -e 's/-O3/${user_flag}/g' setup.py || die
+	sed -i -e "s/-O3/${user_flag}/g" setup.py || die
 }
  
 python_compile() {
