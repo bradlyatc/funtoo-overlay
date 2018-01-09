@@ -38,7 +38,7 @@ RDEPEND="X? ( x11-apps/xrdb x11-misc/xsel )
 REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 
 pkg_setup() {
-	## Setup a sane Clang build environment if clang_build is set
+	##setup a sane Clang build environment if clang_build is set
 	if use clang_build; then
 		filter-ldflags -Wl,-O3 -Wl,-O4
 		is-ldflagq -Wl,-O1 || is-ldflagq -WL,-O2 || append-ldflags -Wl,-O2
@@ -72,7 +72,7 @@ src_prepare() {
 python_compile() {
 	##check for debug or sanitize builds. sanitize only works with clang for now.
 	#call esetup.py to use correct system python. linux-package is config option
-	#for linux packagers bundling. --prefix can be set place compiled file in
+	#for linux packagers bundling. --prefix can be set to place compiled files in
 	#${ED} but there is no install script.
 	if use debug; then
 		einfo
