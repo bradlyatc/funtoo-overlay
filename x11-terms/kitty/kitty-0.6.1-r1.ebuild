@@ -4,7 +4,7 @@
 EAPI=6
 PYTHON_COMPAT=( python3_{5,6} )
 
-inherit gnome2-utils xdg-utils flag-o-matic toolchain-funcs distutils-r1 
+inherit gnome2-utils xdg-utils flag-o-matic toolchain-funcs distutils-r1
 
 DESCRIPTION="A modern, hackable, featureful, OpenGL based terminal emulator"
 HOMEPAGE="https://github.com/kovidgoyal/kitty"
@@ -45,7 +45,7 @@ src_prepare() {
 	user_flag="$(get-flag -O)"
 	sed -i -e "s/-O3/${user_flag}/g" setup.py || die
 }
- 
+
 python_compile() {
 	##check for debug build. call esetup.py to use correct system python.
 	#linux-package is config option for linux packagers bundling. --prefix
@@ -67,13 +67,19 @@ src_install() {
 	doins -r linux-package/lib/kitty
 	insinto /usr/share
 	doins -r linux-package/share/{applications,icons,terminfo,}
-	
+
 	DOCS=( *.asciidoc )
 	einstalldocs
 }
 pkg_postinst() {
 	gnome2_icon_cache_update
 	xdg_desktop_database_update
+	einfo
+	elog "The configuration file is extensive and very well documented."
+	elog "*PLEASE NOTE* the configuration file is located at:"
+	elog "/usr/lib/kitty/kitty/kitty.conf"
+	elog "Copy to ~/.config/kitty/ and make per user changes there."
+	einfo
 }
 
 pkg_postrm() {

@@ -104,6 +104,12 @@ src_install() {
 pkg_postinst() {
 	gnome2_icon_cache_update
 	xdg_desktop_database_update
+	einfo
+	elog "The configuration file is extensive and very well documented."
+	elog "*PLEASE NOTE* the configuration file is located at:"
+	elog "/usr/lib/kitty/kitty/kitty.conf"
+	elog "Copy to ~/.config/kitty/ and make per user changes there."
+	einfo
 }
 
 pkg_postrm() {
