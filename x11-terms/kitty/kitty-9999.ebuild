@@ -31,7 +31,7 @@ DEPEND="${PYTHON_DEPS}
 	clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] )
 	clang_build? ( clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] ) )
 	sanitize? ( clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] ) )"
-RDEPEND="X? ( x11-apps/xrdb x11-misc/xsel )
+RDEPEND="X? ( || ( x11-apps/xrdb x11-misc/xsel ) )
 	imagemagick? ( media-gfx/imagemagick )
 	pillow? ( dev-python/pillow )"
 

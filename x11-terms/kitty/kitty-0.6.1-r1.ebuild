@@ -29,7 +29,7 @@ DEPEND="${PYTHON_DEPS}
 	sys-libs/zlib
 	virtual/pkgconfig
 	wayland? ( >=dev-libs/wayland-protocols-1.6 )"
-RDEPEND="X? ( x11-apps/xrdb x11-misc/xsel )
+RDEPEND="X? ( || ( x11-apps/xrdb x11-misc/xsel ) )
 	imagemagick? ( media-gfx/imagemagick )
 	pillow? ( dev-python/pillow )"
 
