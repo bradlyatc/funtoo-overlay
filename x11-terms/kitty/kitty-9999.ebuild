@@ -15,8 +15,7 @@ LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS=""
 
-CDEPEND="dev-libs/libunistring
-	media-libs/fontconfig
+CDEPEND="media-libs/fontconfig
 	media-libs/freetype
 	x11-libs/libXcursor
 	x11-libs/libXrandr
