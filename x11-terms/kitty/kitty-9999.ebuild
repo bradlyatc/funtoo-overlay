@@ -9,7 +9,7 @@ DESCRIPTION="A modern, hackable, featureful, OpenGL based terminal emulator"
 HOMEPAGE="https://github.com/kovidgoyal/kitty"
 EGIT_REPO_URI="https://github.com/kovidgoyal/${PN}.git"
 
-IUSE="X imagemagick pillow wayland clang clang_build debug sanitize"
+IUSE="X imagemagick pillow wayland clang clang_build debug sanitize profile"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -29,7 +29,8 @@ DEPEND="${PYTHON_DEPS}
 	wayland? ( >=dev-libs/wayland-protocols-1.6 )
 	clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] )
 	clang_build? ( clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] ) )
-	sanitize? ( clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] ) )"
+	sanitize? ( clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] ) )
+	profile? ( dev-util/google-perftools )"
 RDEPEND="X? ( || ( x11-apps/xrdb x11-misc/xsel ) )
 	imagemagick? ( media-gfx/imagemagick )
 	pillow? ( dev-python/pillow )"
@@ -83,6 +84,11 @@ python_compile() {
 		elog "USE=sanitize detected: **SANITIZE BUILD ENABLED**"
 		einfo
 		esetup.py -v --sanitize linux-package
+	elif use profile; then
+		einfo
+		elog "USE=profile detected: **PROFILE BUILD ENABLED**"
+		einfo
+		esetup.py -v --profile linux-package
 	else
 		esetup.py -v linux-package
 	fi
@@ -90,7 +96,8 @@ python_compile() {
 
 src_install() {
 	##manually install package, using --prefix doesn't play well with ebuild
-	dobin linux-package/bin/kitty
+	#dobin linux-package/bin/kitty
+	dobin linux-package/bin/*
 	insinto /usr/lib
 	doins -r linux-package/lib/kitty
 	insinto /usr/share
