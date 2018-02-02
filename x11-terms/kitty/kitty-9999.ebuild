@@ -26,7 +26,7 @@ CDEPEND="media-libs/fontconfig
 DEPEND="${PYTHON_DEPS}
 	sys-libs/zlib
 	virtual/pkgconfig
-	wayland? ( >=dev-libs/wayland-protocols-1.6 )
+	wayland? ( >=dev-libs/wayland-protocols-1.12 )
 	clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] )
 	clang_build? ( clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] ) )
 	sanitize? ( clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] ) )
