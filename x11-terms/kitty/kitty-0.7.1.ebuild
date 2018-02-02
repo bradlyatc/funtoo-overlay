@@ -26,7 +26,7 @@ CDEPEND="media-libs/fontconfig
 DEPEND="${PYTHON_DEPS}
 	sys-libs/zlib
 	virtual/pkgconfig
-	wayland? ( >=dev-libs/wayland-protocols-1.6 )"
+	wayland? ( >=dev-libs/wayland-protocols-1.12 )"
 RDEPEND="X? ( || ( x11-apps/xrdb x11-misc/xsel ) )
 	imagemagick? ( media-gfx/imagemagick )
 	pillow? ( dev-python/pillow )"
