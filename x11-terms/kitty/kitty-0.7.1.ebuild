@@ -15,14 +15,14 @@ LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="*"
 
-CDEPEND="media-libs/fontconfig
+CDEPEND="media-libs/fontconfig:2
 	media-libs/freetype
 	x11-libs/libXcursor
 	x11-libs/libXrandr
 	x11-libs/libXinerama
 	x11-libs/libxkbcommon
-	>=media-libs/harfbuzz-1.5.0
-	media-libs/libpng:*"
+	>=media-libs/harfbuzz-1.5.0:=
+	media-libs/libpng:0="
 DEPEND="${PYTHON_DEPS}
 	sys-libs/zlib
 	virtual/pkgconfig
@@ -64,7 +64,7 @@ src_install() {
 	insinto /usr/lib
 	doins -r linux-package/lib/kitty
 	insinto /usr/share
-	doins -r linux-package/share/{applications,icons,terminfo,}
+	doins -r linux-package/share/{applications,icons,terminfo}
 
 	DOCS=( *.asciidoc )
 	einstalldocs
