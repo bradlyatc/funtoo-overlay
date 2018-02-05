@@ -16,13 +16,13 @@ SLOT="0"
 KEYWORDS=""
 
 CDEPEND="media-libs/fontconfig
-	media-libs/freetype
+	media-libs/freetype:2
 	x11-libs/libXcursor
 	x11-libs/libXrandr
 	x11-libs/libXinerama
 	x11-libs/libxkbcommon
-	>=media-libs/harfbuzz-1.5.0
-	media-libs/libpng:*"
+	>=media-libs/harfbuzz-1.5.0:=
+	media-libs/libpng:0="
 DEPEND="${PYTHON_DEPS}
 	sys-libs/zlib
 	virtual/pkgconfig
@@ -62,7 +62,7 @@ src_prepare() {
 	default
 	##remove unwanted -Werror flag if not debug build
 	if use !debug; then
-		sed -i -e 's/-Werror//g' setup.py || die
+		sed -i -e 's/-Werror//g;s/-pedantic-errors/-pedantic/g' setup.py || die
 	fi
 	##substitute hard coded -O with user controlled
 	user_flag="$(get-flag -O)"
@@ -96,7 +96,6 @@ python_compile() {
 
 src_install() {
 	##manually install package, using --prefix doesn't play well with ebuild
-	#dobin linux-package/bin/kitty
 	dobin linux-package/bin/*
 	insinto /usr/lib
 	doins -r linux-package/lib/kitty

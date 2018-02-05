@@ -37,7 +37,7 @@ src_prepare() {
 	default
 	##remove unwanted -Werror if not debug build
 	if use !debug; then
-		sed -i -e 's/-Werror//g' setup.py || die
+		sed -i -e 's/-Werror//g;s/-pedantic-errors/-pedantic/g' setup.py || die
 	fi
 	##substitute hard coded -O with user controlled
 	user_flag="$(get-flag -O)"
