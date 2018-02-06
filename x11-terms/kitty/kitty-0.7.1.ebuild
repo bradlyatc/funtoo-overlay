@@ -3,7 +3,7 @@
 EAPI=6
 PYTHON_COMPAT=( python3_{5,6} )
 
-inherit gnome2-utils xdg-utils flag-o-matic toolchain-funcs distutils-r1
+inherit gnome2-utils xdg-utils flag-o-matic distutils-r1
 
 DESCRIPTION="A modern, hackable, featureful, OpenGL based terminal emulator"
 HOMEPAGE="https://github.com/kovidgoyal/kitty"
@@ -39,7 +39,7 @@ src_prepare() {
 	if use !debug; then
 		sed -i -e 's/-Werror//g;s/-pedantic-errors/-pedantic/g' setup.py || die
 	fi
-	##substitute hard coded -O with user controlled
+	##substitute hard coded -O3 with user controlled
 	user_flag="$(get-flag -O)"
 	sed -i -e "s/-O3/${user_flag}/g" setup.py || die
 }
