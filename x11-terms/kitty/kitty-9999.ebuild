@@ -100,7 +100,7 @@ src_install() {
 	insinto /usr/lib
 	doins -r linux-package/lib/kitty
 	insinto /usr/share
-	doins -r linux-package/share/{applications,icons,terminfo,}
+	doins -r linux-package/share/{applications,icons,terminfo}
 
 	DOCS=( *.asciidoc )
 	einstalldocs
