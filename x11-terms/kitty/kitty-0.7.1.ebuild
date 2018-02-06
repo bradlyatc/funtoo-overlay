@@ -35,7 +35,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 
 src_prepare() {
 	default
-	##remove unwanted -Werror if not debug build
+	##remove unwanted -Werror and -pedantic-errors if not debug build
 	if use !debug; then
 		sed -i -e 's/-Werror//g;s/-pedantic-errors/-pedantic/g' setup.py || die
 	fi
@@ -48,23 +48,14 @@ python_compile() {
 	##check for debug build. call esetup.py to use correct system python.
 	#linux-package is config option for linux packagers bundling. --prefix
 	#can be set to place compiled files in ${ED} but there is no install script
-	if use debug; then
-		einfo
-		elog "USE=debug detected: **DEBUGGING BUILD ENABLED**"
-		einfo
-		esetup.py -v --debug linux-package
-	else
-		esetup.py -v linux-package
-	fi
+	esetup.py -v $(usex debug --debug "") linux-package
 }
 
 src_install() {
 	##manually install package, using --prefix doesn't play well with ebuild
-	dobin linux-package/bin/kitty
-	insinto /usr/lib
-	doins -r linux-package/lib/kitty
-	insinto /usr/share
-	doins -r linux-package/share/{applications,icons,terminfo}
+	dobin linux-package/bin/*
+	insinto /usr
+	doins -r linux-package/{lib,share}
 
 	DOCS=( *.asciidoc )
 	einstalldocs
@@ -73,7 +64,6 @@ pkg_postinst() {
 	gnome2_icon_cache_update
 	xdg_desktop_database_update
 	einfo
-	elog "The configuration file is extensive and very well documented."
 	elog "*PLEASE NOTE* the configuration file is located at:"
 	elog "/usr/lib/kitty/kitty/kitty.conf"
 	elog "Copy to ~/.config/kitty/ and make per user changes there."

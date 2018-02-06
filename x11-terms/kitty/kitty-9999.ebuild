@@ -60,7 +60,7 @@ pkg_setup() {
 
 src_prepare() {
 	default
-	##remove unwanted -Werror flag if not debug build
+	##remove unwanted -Werror and -pedantic-errors flags if not debug build
 	if use !debug; then
 		sed -i -e 's/-Werror//g;s/-pedantic-errors/-pedantic/g' setup.py || die
 	fi
@@ -97,10 +97,8 @@ python_compile() {
 src_install() {
 	##manually install package, using --prefix doesn't play well with ebuild
 	dobin linux-package/bin/*
-	insinto /usr/lib
-	doins -r linux-package/lib/kitty
-	insinto /usr/share
-	doins -r linux-package/share/{applications,icons,terminfo}
+	insinto /usr
+	doins -r linux-package/{lib,share}
 
 	DOCS=( *.asciidoc )
 	einstalldocs
@@ -110,7 +108,6 @@ pkg_postinst() {
 	gnome2_icon_cache_update
 	xdg_desktop_database_update
 	einfo
-	elog "The configuration file is extensive and very well documented."
 	elog "*PLEASE NOTE* the configuration file is located at:"
 	elog "/usr/lib/kitty/kitty/kitty.conf"
 	elog "Copy to ~/.config/kitty/ and make per user changes there."
