@@ -74,23 +74,24 @@ python_compile() {
 	#call esetup.py to use correct system python. linux-package is config option
 	#for linux packagers bundling. --prefix can be set to place compiled files in
 	#${ED} but there is no install script.
+	export XDG_CONFIG_HOME="$HOME/.config"
 	if use debug; then
 		einfo
 		elog "USE=debug detected: **DEBUG BUILD ENABLED**"
 		einfo
-		esetup.py -v --debug linux-package
+		esetup.py -v --debug --libdir-name $(get_libdir) linux-package
 	elif use sanitize && use clang && tc-is-clang; then
 		einfo
 		elog "USE=sanitize detected: **SANITIZE BUILD ENABLED**"
 		einfo
-		esetup.py -v --sanitize linux-package
+		esetup.py -v --sanitize --libdir-name $(get_libdir) linux-package
 	elif use profile; then
 		einfo
 		elog "USE=profile detected: **PROFILE BUILD ENABLED**"
 		einfo
-		esetup.py -v --profile linux-package
+		esetup.py -v --profile --libdir-name $(get_libdir) linux-package
 	else
-		esetup.py -v linux-package
+		esetup.py -v --libdir-name $(get_libdir) linux-package
 	fi
 }
 
@@ -98,7 +99,7 @@ src_install() {
 	##manually install package, using --prefix doesn't play well with ebuild
 	dobin linux-package/bin/*
 	insinto /usr
-	doins -r linux-package/{lib,share}
+	doins -r linux-package/{lib64,share}
 
 	DOCS=( *.asciidoc )
 	einstalldocs
