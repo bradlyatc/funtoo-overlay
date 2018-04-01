@@ -20,7 +20,7 @@ CDEPEND="media-libs/fontconfig
 	x11-libs/libXcursor
 	x11-libs/libXrandr
 	x11-libs/libXinerama
-	x11-libs/libxkbcommon
+	>=x11-libs/libxkbcommon-0.5
 	>=media-libs/harfbuzz-1.5.0:=
 	media-libs/libpng:0="
 DEPEND="${PYTHON_DEPS}
@@ -56,6 +56,8 @@ pkg_setup() {
 		elog "LDFLAGS: ${LDFLAGS}"
 		einfo
 	fi
+	LIBDIR="$(get_libdir)"
+	export LIBDIR
 }
 
 src_prepare() {
@@ -79,19 +81,19 @@ python_compile() {
 		einfo
 		elog "USE=debug detected: **DEBUG BUILD ENABLED**"
 		einfo
-		esetup.py -v --debug --libdir-name $(get_libdir) linux-package
+		esetup.py -v --debug --libdir-name "${LIBDIR}" linux-package
 	elif use sanitize && use clang && tc-is-clang; then
 		einfo
 		elog "USE=sanitize detected: **SANITIZE BUILD ENABLED**"
 		einfo
-		esetup.py -v --sanitize --libdir-name $(get_libdir) linux-package
+		esetup.py -v --sanitize --libdir-name "${LIBDIR}" linux-package
 	elif use profile; then
 		einfo
 		elog "USE=profile detected: **PROFILE BUILD ENABLED**"
 		einfo
-		esetup.py -v --profile --libdir-name $(get_libdir) linux-package
+		esetup.py -v --profile --libdir-name "${LIBDIR}" linux-package
 	else
-		esetup.py -v --libdir-name $(get_libdir) linux-package
+		esetup.py -v --libdir-name "${LIBDIR}" linux-package
 	fi
 }
 
@@ -99,7 +101,7 @@ src_install() {
 	##manually install package, using --prefix doesn't play well with ebuild
 	dobin linux-package/bin/*
 	insinto /usr
-	doins -r linux-package/{lib64,share}
+	doins -r linux-package/{$LIBDIR,share}
 
 	DOCS=( *.asciidoc )
 	einstalldocs
