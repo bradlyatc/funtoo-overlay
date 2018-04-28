@@ -20,6 +20,7 @@ CDEPEND="media-libs/fontconfig
 	x11-libs/libXcursor
 	x11-libs/libXrandr
 	x11-libs/libXinerama
+	x11-libs/libXi
 	>=x11-libs/libxkbcommon-0.5
 	>=media-libs/harfbuzz-1.5.0:=
 	media-libs/libpng:0="
@@ -62,6 +63,10 @@ pkg_setup() {
 
 src_prepare() {
 	default
+
+	##fix libdir
+	sed -i "/libdir =/s/'lib'/'$(get_libdir)'/" setup.py || die
+	sed -i "s#/../lib/kitty#/../$(get_libdir)/kitty#" linux-launcher.c || die
 	##remove unwanted -Werror and -pedantic-errors flags if not debug build
 	if use !debug; then
 		sed -i -e 's/-Werror//g;s/-pedantic-errors/-pedantic/g' setup.py || die
