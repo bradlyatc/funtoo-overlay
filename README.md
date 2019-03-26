@@ -1,5 +1,5 @@
 # Funtoo-Overlay
-=====================================================================
+
 ## Firefox and Debian-Sources have been updated and fixes for gnome-keyring	      
 
 ### To use this overlay please do the following on Funtoo:
