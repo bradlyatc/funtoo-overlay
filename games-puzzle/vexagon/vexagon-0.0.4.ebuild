@@ -26,6 +26,9 @@ src_prepare() {
 	cmake-utils_src_prepare
 }
 src_configure() {
+	local mycmakeargs=(
+		-D_VEXREVISION_="v${PV} (Funtoo)"
+	)
 	cmake-utils_src_configure
 }
 pkg_postinst() {
