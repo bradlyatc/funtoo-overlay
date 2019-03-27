@@ -1,0 +1,4 @@
+[funtoo-overlay]
+location = /var/git/funtoo-overlay
+auto-sync = no
+priority = 10
