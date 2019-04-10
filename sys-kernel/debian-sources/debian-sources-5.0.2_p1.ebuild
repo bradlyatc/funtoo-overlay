@@ -120,7 +120,7 @@ src_prepare() {
         epatch "${FILESDIR}"/${PN}-4.13.10-mcelog.patch
 
 	## do not configure debian devs certs.
-	epatch "${FILESDIR}"/${PN}-${DEB_PV_BASE}-certs.patch
+	epatch "${FILESDIR}"/${PN}-${DEB_PV_BASE}-nocerts.patch
 
 	## FL-3381. enable IKCONFIG
 	epatch "${FILESDIR}"/${PN}-${DEB_PV_BASE}-ikconfig.patch
