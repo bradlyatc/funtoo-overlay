@@ -3,7 +3,7 @@
 # Documentation for adding new kernels -- do not remove!
 #
 # Find latest stable kernel release for debian here:
-#   https://packages.debian.org/stable/kernel/linux-source-4.9
+#   https://packages.debian.org/testing/kernel/
 
 EAPI=5
 
@@ -31,7 +31,7 @@ IUSE="binary ec2 sign-modules"
 DEPEND="binary? ( >=sys-kernel/genkernel-3.4.40.7 )"
 DESCRIPTION="Debian Sources (and optional binary kernel)"
 DEB_UPSTREAM="http://http.debian.net/debian/pool/main/l/linux"
-HOMEPAGE="https://packages.debian.org/stable/kernel/linux-image-4.9.0-6-amd64"
+HOMEPAGE="https://packages.debian.org/testing/kernel/"
 SRC_URI="$DEB_UPSTREAM/${KERNEL_ARCHIVE} $DEB_UPSTREAM/${PATCH_ARCHIVE}"
 S="$WORKDIR/linux-${DEB_PV_BASE}"
 
