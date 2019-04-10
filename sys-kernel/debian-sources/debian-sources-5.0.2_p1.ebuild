@@ -127,7 +127,7 @@ src_prepare() {
 
 	# namespace version 3 support from upstream. See:
 	# https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=8db6c34f1dbc8e06aa016a9b829b06902c3e1340 and FL-4725.
-	epatch "${FILESDIR}"/namespace-v3-upstream.patch
+	#epatch "${FILESDIR}"/namespace-v3-upstream.patch
 
 	# Updated driver support -- FL-6316
 	#epatch "${FILESDIR}"/linux-4.20-e1000e.patch
