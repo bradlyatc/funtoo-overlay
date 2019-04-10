@@ -74,7 +74,7 @@ src_prepare() {
 	epatch "${FILESDIR}"/debian-sources-3.14.4-xfs-libcrc32c-fix.patch
 
 	## do not configure debian certs.
-	epatch "${FILESDIR}"/${PN}-${PV}-nocerts.patch
+	epatch "${FILESDIR}"/${P}-nocerts.patch
 
 	## FL-3381. enable IKCONFIG
 	epatch "${FILESDIR}"/${P}-ikconfig.patch
