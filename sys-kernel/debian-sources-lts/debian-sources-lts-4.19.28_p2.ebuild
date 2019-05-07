@@ -27,8 +27,10 @@ PATCH_ARCHIVE="linux_${DEB_PV}.debian.tar.xz"
 RESTRICT="binchecks strip mirror"
 LICENSE="GPL-2"
 KEYWORDS="x86 amd64"
-IUSE="binary ec2 sign-modules"
-DEPEND="binary? ( >=sys-kernel/genkernel-3.4.40.7 )"
+IUSE="binary ec2 sign-modules btrfs zfs"
+DEPEND="binary? ( >=sys-kernel/genkernel-3.4.40.7 )
+	btrfs? ( sys-fs/btrfs-progs )
+	zfs? ( sys-fs/zfs )"
 DESCRIPTION="Debian Sources (and optional binary kernel)"
 DEB_UPSTREAM="http://http.debian.net/debian/pool/main/l/linux"
 HOMEPAGE="https://packages.debian.org/unstable/kernel/"
@@ -212,6 +214,8 @@ src_compile() {
 		--luks \
 		--mdadm \
 		--iscsi \
+		$(usex btrfs --btrfs --nobtrfs) \
+		$(usex zfs --zfs --no-zfs) \
 		--module-prefix="${WORKDIR}"/out \
 		all || die
 }
