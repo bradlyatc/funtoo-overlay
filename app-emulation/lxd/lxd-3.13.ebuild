@@ -8,7 +8,7 @@ HOMEPAGE="https://linuxcontainers.org/lxd/introduction/"
 
 LICENSE="Apache-2.0 BSD BSD-2 LGPL-3 MIT MPL-2.0"
 SLOT="0"
-KEYWORDS="~amd64"
+KEYWORDS="*"
 
 IUSE="+daemon +ipv6 +dnsmasq nls test tools"
 
@@ -16,8 +16,7 @@ inherit autotools bash-completion-r1 linux-info systemd user
 
 SRC_URI="https://linuxcontainers.org/downloads/${PN}/${P}.tar.gz"
 
-DEPEND="
-	dev-lang/tcl
+DEPEND="dev-lang/tcl
 	>=dev-lang/go-1.9.4
 	dev-libs/libuv
 	dev-libs/protobuf
@@ -29,8 +28,7 @@ DEPEND="
 	)
 "
 
-RDEPEND="
-	daemon? (
+RDEPEND="daemon? (
 		app-arch/xz-utils
 		>=app-emulation/lxc-2.0.7[seccomp]
 		dev-libs/libuv

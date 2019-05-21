@@ -9,14 +9,13 @@ DESCRIPTION="LinuX Containers userspace utilities"
 HOMEPAGE="https://linuxcontainers.org/"
 SRC_URI="https://linuxcontainers.org/downloads/lxc/${P}.tar.gz"
 
-KEYWORDS="~amd64 ~arm ~arm64 ~ppc64 ~x86"
+KEYWORDS="*"
 
 LICENSE="LGPL-3"
 SLOT="0"
 IUSE="apparmor examples pam seccomp selinux +templates"
 
-RDEPEND="
-	net-libs/gnutls
+RDEPEND="net-libs/gnutls
 	sys-libs/libcap
 	pam? ( virtual/pam )
 	seccomp? ( sys-libs/libseccomp )
