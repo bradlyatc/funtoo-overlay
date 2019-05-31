@@ -209,7 +209,6 @@ src_compile() {
 		--lvm \
 		--luks \
 		--mdadm \
-		--iscsi \
 		--module-prefix="${WORKDIR}"/out \
 		all || die
 }

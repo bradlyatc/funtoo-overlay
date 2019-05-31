@@ -214,7 +214,6 @@ src_compile() {
 		--lvm \
 		--luks \
 		--mdadm \
-		--iscsi \
 		$(usex btrfs --btrfs --nobtrfs) \
 		$(usex zfs --zfs --no-zfs) \
 		--module-prefix="${WORKDIR}"/out \
