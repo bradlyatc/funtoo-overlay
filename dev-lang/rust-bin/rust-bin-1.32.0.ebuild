@@ -1,9 +1,9 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=6
 
-inherit bash-completion-r1 rust-toolchain toolchain-funcs
+inherit eutils bash-completion-r1 rust-toolchain toolchain-funcs
 
 MY_P="rust-${PV}"
 
@@ -13,11 +13,11 @@ SRC_URI="$(rust_all_arch_uris ${MY_P})"
 
 LICENSE="|| ( MIT Apache-2.0 ) BSD-1 BSD-2 BSD-4 UoI-NCSA"
 SLOT="stable"
-KEYWORDS="~amd64 ~arm64 ~ppc64 ~x86"
+KEYWORDS="amd64 arm arm64 ppc64 x86"
 IUSE="clippy cpu_flags_x86_sse2 doc libressl rustfmt"
 
 DEPEND=""
-RDEPEND=">=app-eselect/eselect-rust-20190311
+RDEPEND=">=app-eselect/eselect-rust-0.3_pre20150425
 	sys-libs/zlib
 	!libressl? ( dev-libs/openssl:0= )
 	libressl? ( dev-libs/libressl:0= )
@@ -31,7 +31,6 @@ REQUIRED_USE="x86? ( cpu_flags_x86_sse2 )"
 QA_PREBUILT="
 	opt/${P}/bin/*-${PV}
 	opt/${P}/lib/*.so
-	opt/${P}/lib/rustlib/*/bin/*
 	opt/${P}/lib/rustlib/*/lib/*.so
 	opt/${P}/lib/rustlib/*/lib/*.rlib*
 "
@@ -56,57 +55,42 @@ src_install() {
 	./install.sh \
 		--components="${components}" \
 		--disable-verify \
-		--prefix="${ED}/opt/${P}" \
-		--mandir="${ED}/usr/share/${P}/man" \
+		--prefix="${D}/opt/${P}" \
+		--mandir="${D}/usr/share/${P}/man" \
 		--disable-ldconfig \
 		|| die
 
 	local rustc=rustc-bin-${PV}
 	local rustdoc=rustdoc-bin-${PV}
 	local rustgdb=rust-gdb-bin-${PV}
-	local rustgdbgui=rust-gdbgui-bin-${PV}
 	local rustlldb=rust-lldb-bin-${PV}
 
-	mv "${ED}/opt/${P}/bin/rustc" "${ED}/opt/${P}/bin/${rustc}" || die
-	mv "${ED}/opt/${P}/bin/rustdoc" "${ED}/opt/${P}/bin/${rustdoc}" || die
-	mv "${ED}/opt/${P}/bin/rust-gdb" "${ED}/opt/${P}/bin/${rustgdb}" || die
-	mv "${ED}/opt/${P}/bin/rust-gdbgui" "${ED}/opt/${P}/bin/${rustgdbgui}" || die
-	mv "${ED}/opt/${P}/bin/rust-lldb" "${ED}/opt/${P}/bin/${rustlldb}" || die
-
-	dosym "${rustc}" "/opt/${P}/bin/rustc"
-	dosym "${rustdoc}" "/opt/${P}/bin/rustdoc"
-	dosym "${rustgdb}" "/opt/${P}/bin/rust-gdb"
-	dosym "${rustgdbgui}" "/opt/${P}/bin/rust-gdbgui"
-	dosym "${rustlldb}" "/opt/${P}/bin/rust-lldb"
+	mv "${D}/opt/${P}/bin/rustc" "${D}/opt/${P}/bin/${rustc}" || die
+	mv "${D}/opt/${P}/bin/rustdoc" "${D}/opt/${P}/bin/${rustdoc}" || die
+	mv "${D}/opt/${P}/bin/rust-gdb" "${D}/opt/${P}/bin/${rustgdb}" || die
+	mv "${D}/opt/${P}/bin/rust-lldb" "${D}/opt/${P}/bin/${rustlldb}" || die
 
 	dosym "../../opt/${P}/bin/${rustc}" "/usr/bin/${rustc}"
 	dosym "../../opt/${P}/bin/${rustdoc}" "/usr/bin/${rustdoc}"
 	dosym "../../opt/${P}/bin/${rustgdb}" "/usr/bin/${rustgdb}"
-	dosym "../../opt/${P}/bin/${rustgdbgui}" "/usr/bin/${rustgdbgui}"
 	dosym "../../opt/${P}/bin/${rustlldb}" "/usr/bin/${rustlldb}"
 
 	local cargo=cargo-bin-${PV}
-	mv "${ED}/opt/${P}/bin/cargo" "${ED}/opt/${P}/bin/${cargo}" || die
-	dosym "${cargo}" "/opt/${P}/bin/cargo"
+	mv "${D}/opt/${P}/bin/cargo" "${D}/opt/${P}/bin/${cargo}" || die
 	dosym "../../opt/${P}/bin/${cargo}" "/usr/bin/${cargo}"
-
 	if use clippy; then
 		local clippy_driver=clippy-driver-bin-${PV}
 		local cargo_clippy=cargo-clippy-bin-${PV}
-		mv "${ED}/opt/${P}/bin/clippy-driver" "${ED}/opt/${P}/bin/${clippy_driver}" || die
-		mv "${ED}/opt/${P}/bin/cargo-clippy" "${ED}/opt/${P}/bin/${cargo_clippy}" || die
-		dosym "${clippy_driver}" "/opt/${P}/bin/clippy-driver"
-		dosym "${cargo_clippy}" "/opt/${P}/bin/cargo-clippy"
+		mv "${D}/opt/${P}/bin/clippy-driver" "${D}/opt/${P}/bin/${clippy_driver}" || die
+		mv "${D}/opt/${P}/bin/cargo-clippy" "${D}/opt/${P}/bin/${cargo_clippy}" || die
 		dosym "../../opt/${P}/bin/${clippy_driver}" "/usr/bin/${clippy_driver}"
 		dosym "../../opt/${P}/bin/${cargo_clippy}" "/usr/bin/${cargo_clippy}"
 	fi
 	if use rustfmt; then
 		local rustfmt=rustfmt-bin-${PV}
 		local cargo_fmt=cargo-fmt-bin-${PV}
-		mv "${ED}/opt/${P}/bin/rustfmt" "${ED}/opt/${P}/bin/${rustfmt}" || die
-		mv "${ED}/opt/${P}/bin/cargo-fmt" "${ED}/opt/${P}/bin/${cargo_fmt}" || die
-		dosym "${rustfmt}" "/opt/${P}/bin/rustfmt"
-		dosym "${cargo_fmt}" "/opt/${P}/bin/cargo-fmt"
+		mv "${D}/opt/${P}/bin/rustfmt" "${D}/opt/${P}/bin/${rustfmt}" || die
+		mv "${D}/opt/${P}/bin/cargo-fmt" "${D}/opt/${P}/bin/${cargo_fmt}" || die
 		dosym "../../opt/${P}/bin/${rustfmt}" "/usr/bin/${rustfmt}"
 		dosym "../../opt/${P}/bin/${cargo_fmt}" "/usr/bin/${cargo_fmt}"
 	fi
@@ -117,11 +101,9 @@ src_install() {
 	EOF
 	doenvd "${T}"/50${P}
 
-	# note: eselect-rust adds EROOT to all paths below
 	cat <<-EOF > "${T}/provider-${P}"
 	/usr/bin/rustdoc
 	/usr/bin/rust-gdb
-	/usr/bin/rust-gdbgui
 	/usr/bin/rust-lldb
 	EOF
 	echo /usr/bin/cargo >> "${T}/provider-${P}"
