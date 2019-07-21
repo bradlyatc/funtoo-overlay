@@ -1,11 +1,13 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=6
 
-PYTHON_COMPAT=( python2_7 python3_{5,6,7} pypy )
+PYTHON_COMPAT=( python2_7 python3_{5,6} pypy )
 
-inherit check-reqs estack flag-o-matic llvm multiprocessing multilib-build python-any-r1 rust-toolchain toolchain-funcs
+LLVM_MAX_SLOT=7
+
+inherit check-reqs eapi7-ver estack flag-o-matic llvm multiprocessing multilib-build python-any-r1 rust-toolchain toolchain-funcs
 
 if [[ ${PV} = *beta* ]]; then
 	betaver=${PV//*beta}
@@ -18,19 +20,19 @@ else
 	SLOT="stable/${ABI_VER}"
 	MY_P="rustc-${PV}"
 	SRC="${MY_P}-src.tar.xz"
-	KEYWORDS="~amd64 arm64 ~ppc64 ~x86"
+	KEYWORDS="amd64 arm arm64 ppc64 x86"
 fi
 
-RUST_STAGE0_VERSION="1.$(($(ver_cut 2) - 1)).2"
+RUST_STAGE0_VERSION="1.$(($(ver_cut 2) - 1)).1"
 
 DESCRIPTION="Systems programming language from Mozilla"
 HOMEPAGE="https://www.rust-lang.org/"
 
 SRC_URI="https://static.rust-lang.org/dist/${SRC} -> rustc-${PV}-src.tar.xz
-	$(rust_all_arch_uris rust-${RUST_STAGE0_VERSION})"
+		$(rust_all_arch_uris rust-${RUST_STAGE0_VERSION})"
 
 ALL_LLVM_TARGETS=( AArch64 AMDGPU ARM BPF Hexagon Lanai Mips MSP430
-	NVPTX PowerPC Sparc SystemZ WebAssembly X86 XCore )
+	NVPTX PowerPC Sparc SystemZ X86 XCore )
 ALL_LLVM_TARGETS=( "${ALL_LLVM_TARGETS[@]/#/llvm_targets_}" )
 LLVM_TARGET_USEDEPS=${ALL_LLVM_TARGETS[@]/%/?}
 
@@ -38,62 +40,37 @@ LICENSE="|| ( MIT Apache-2.0 ) BSD-1 BSD-2 BSD-4 UoI-NCSA"
 
 IUSE="clippy cpu_flags_x86_sse2 debug doc libressl rls rustfmt system-llvm wasm ${ALL_LLVM_TARGETS[*]}"
 
-# Please keep the LLVM dependency block separate. Since LLVM is slotted,
-# we need to *really* make sure we're not pulling one than more slot
-# simultaneously.
-
-# How to use it:
-# 1. List all the working slots (with min versions) in ||, newest first.
-# 2. Update the := to specify *max* version, e.g. < 9.
-# 3. Specify LLVM_MAX_SLOT, e.g. 8.
-LLVM_DEPEND="
-	|| (
-		sys-devel/llvm:8[llvm_targets_WebAssembly?]
-		wasm? ( =sys-devel/lld-8* )
-	)
-	<sys-devel/llvm-9:=
-"
-LLVM_MAX_SLOT=8
-
-COMMON_DEPEND="
-	sys-libs/zlib
-	!libressl? ( dev-libs/openssl:0= )
-	libressl? ( dev-libs/libressl:0= )
-	net-libs/libssh2
-	net-libs/http-parser:=
-	net-misc/curl[ssl]
-	system-llvm? (
-		${LLVM_DEPEND}
-	)
-"
-
+COMMON_DEPEND=">=app-eselect/eselect-rust-0.3_pre20150425
+		sys-libs/zlib
+		!libressl? ( dev-libs/openssl:0= )
+		libressl? ( dev-libs/libressl:0= )
+		net-libs/libssh2
+		net-libs/http-parser:=
+		net-misc/curl[ssl]
+		system-llvm? ( sys-devel/llvm:7= )"
 DEPEND="${COMMON_DEPEND}
 	${PYTHON_DEPS}
 	|| (
 		>=sys-devel/gcc-4.7
 		>=sys-devel/clang-3.5
 	)
-	dev-util/cmake
-"
-
+	dev-util/cmake"
 RDEPEND="${COMMON_DEPEND}
-	>=app-eselect/eselect-rust-20190311
 	!dev-util/cargo
-	rustfmt? ( !dev-util/rustfmt )
-"
-
+	rustfmt? ( !dev-util/rustfmt )"
 REQUIRED_USE="|| ( ${ALL_LLVM_TARGETS[*]} )
-	wasm? ( llvm_targets_WebAssembly )
-	x86? ( cpu_flags_x86_sse2 )
-"
-
-PATCHES=(
-	"${FILESDIR}"/0001-llvm-cmake-Add-additional-headers-only-if-they-exist.patch
-	"${FILESDIR}"/1.35.0-revert-commits-triggering-multiple-llvm-rebuilds.patch
-	"${FILESDIR}"/1.34.0-libressl.patch # bug 684224
-)
+				x86? ( cpu_flags_x86_sse2 )"
 
 S="${WORKDIR}/${MY_P}-src"
+
+PATCHES=(
+	"${FILESDIR}"/1.30.1-clippy-sysroot.patch
+	"${FILESDIR}"/1.32.0-fix-configure-of-bundled-llvm.patch
+	"${FILESDIR}"/1.32.0-system-llvm-7-SIGSEGV.patch
+	# Support LibreSSL 2.8.x: https://github.com/sfackler/rust-openssl/commit/9fd7584a84168655cb27e03b7e19a9847b88e77f
+	# Support LibreSSL 2.9.0: https://github.com/sfackler/rust-openssl/commit/af4488357c9b3e003b883e89c16aaa675ad0c6ac
+	"${FILESDIR}"/1.32.0-libressl.patch
+)
 
 toml_usex() {
 	usex "$1" true false
@@ -101,9 +78,11 @@ toml_usex() {
 
 pre_build_checks() {
 	CHECKREQS_DISK_BUILD="7G"
+	CHECKREQS_MEMORY="4G"
 	eshopts_push -s extglob
 	if is-flagq '-g?(gdb)?([1-9])'; then
 		CHECKREQS_DISK_BUILD="10G"
+		CHECKREQS_MEMORY="16G"
 	fi
 	eshopts_pop
 	check-reqs_pkg_setup
@@ -116,7 +95,9 @@ pkg_pretend() {
 pkg_setup() {
 	pre_build_checks
 	python-any-r1_pkg_setup
-	use system-llvm && llvm_pkg_setup
+	if use system-llvm; then
+		llvm_pkg_setup
+	fi
 }
 
 src_prepare() {
@@ -125,13 +106,6 @@ src_prepare() {
 	local rust_stage0="rust-${RUST_STAGE0_VERSION}-$(rust_abi)"
 
 	"${WORKDIR}/${rust_stage0}"/install.sh --disable-ldconfig --destdir="${rust_stage0_root}" --prefix=/ || die
-
-	# ugly hack for https://bugs.gentoo.org/679806
-	# we have to keep it until we switch to 1.35.x bootstrap tarball.
-	if use ppc64; then
-		sed -i 's/getentropy/gEtEnTrOpY/g' "${rust_stage0_root}"/bin/cargo || die
-		export OPENSSL_ppccap=0
-	fi
 
 	default
 }
@@ -184,7 +158,6 @@ src_configure() {
 		vendor = true
 		extended = ${extended}
 		tools = [${tools}]
-		verbose = 2
 		[install]
 		prefix = "${EPREFIX}/usr"
 		libdir = "$(get_libdir)/${P}"
@@ -197,7 +170,7 @@ src_configure() {
 		default-linker = "$(tc-getCC)"
 		channel = "stable"
 		rpath = false
-		lld = $(usex system-llvm false $(toml_usex wasm))
+		lld = $(toml_usex wasm)
 	EOF
 
 	for v in $(multilib_get_enabled_abi_pairs); do
@@ -225,39 +198,37 @@ src_configure() {
 	if use wasm; then
 		cat <<- EOF >> "${S}"/config.toml
 			[target.wasm32-unknown-unknown]
-			linker = "$(usex system-llvm lld rust-lld)"
+			linker = "rust-lld"
 		EOF
 	fi
 }
 
 src_compile() {
 	env $(cat "${S}"/config.env)\
-		"${EPYTHON}" ./x.py build -vv --config="${S}"/config.toml -j$(makeopts_jobs) \
+		"${EPYTHON}" ./x.py build --config="${S}"/config.toml -j$(makeopts_jobs) \
 		--exclude src/tools/miri || die # https://github.com/rust-lang/rust/issues/52305
 }
 
 src_install() {
 	local rust_target abi_libdir
 
-	env DESTDIR="${D}" "${EPYTHON}" ./x.py install -vv --config="${S}"/config.toml \
-	--exclude src/tools/miri || die
+	env DESTDIR="${D}" "${EPYTHON}" ./x.py install || die
 
-	mv "${ED}/usr/bin/rustc" "${ED}/usr/bin/rustc-${PV}" || die
-	mv "${ED}/usr/bin/rustdoc" "${ED}/usr/bin/rustdoc-${PV}" || die
-	mv "${ED}/usr/bin/rust-gdb" "${ED}/usr/bin/rust-gdb-${PV}" || die
-	mv "${ED}/usr/bin/rust-gdbgui" "${ED}/usr/bin/rust-gdbgui-${PV}" || die
-	mv "${ED}/usr/bin/rust-lldb" "${ED}/usr/bin/rust-lldb-${PV}" || die
-	mv "${ED}/usr/bin/cargo" "${ED}/usr/bin/cargo-${PV}" || die
+	mv "${D}/usr/bin/rustc" "${D}/usr/bin/rustc-${PV}" || die
+	mv "${D}/usr/bin/rustdoc" "${D}/usr/bin/rustdoc-${PV}" || die
+	mv "${D}/usr/bin/rust-gdb" "${D}/usr/bin/rust-gdb-${PV}" || die
+	mv "${D}/usr/bin/rust-lldb" "${D}/usr/bin/rust-lldb-${PV}" || die
+	mv "${D}/usr/bin/cargo" "${D}/usr/bin/cargo-${PV}" || die
 	if use clippy; then
-		mv "${ED}/usr/bin/clippy-driver" "${ED}/usr/bin/clippy-driver-${PV}" || die
-		mv "${ED}/usr/bin/cargo-clippy" "${ED}/usr/bin/cargo-clippy-${PV}" || die
+		mv "${D}/usr/bin/clippy-driver" "${D}/usr/bin/clippy-driver-${PV}" || die
+		mv "${D}/usr/bin/cargo-clippy" "${D}/usr/bin/cargo-clippy-${PV}" || die
 	fi
 	if use rls; then
-		mv "${ED}/usr/bin/rls" "${ED}/usr/bin/rls-${PV}" || die
+		mv "${D}/usr/bin/rls" "${D}/usr/bin/rls-${PV}" || die
 	fi
 	if use rustfmt; then
-		mv "${ED}/usr/bin/rustfmt" "${ED}/usr/bin/rustfmt-${PV}" || die
-		mv "${ED}/usr/bin/cargo-fmt" "${ED}/usr/bin/cargo-fmt-${PV}" || die
+		mv "${D}/usr/bin/rustfmt" "${D}/usr/bin/rustfmt-${PV}" || die
+		mv "${D}/usr/bin/cargo-fmt" "${D}/usr/bin/cargo-fmt-${PV}" || die
 	fi
 
 	# Copy shared library versions of standard libraries for all targets
@@ -269,40 +240,24 @@ src_install() {
 		fi
 		abi_libdir=$(get_abi_LIBDIR ${v##*.})
 		rust_target=$(rust_abi $(get_abi_CHOST ${v##*.}))
-		mkdir -p "${ED}/usr/${abi_libdir}"
-		cp "${ED}/usr/$(get_libdir)/${P}/rustlib/${rust_target}/lib"/*.so \
-		   "${ED}/usr/${abi_libdir}" || die
+		mkdir -p "${D}/usr/${abi_libdir}"
+		cp "${D}/usr/$(get_libdir)/${P}/rustlib/${rust_target}/lib"/*.so \
+		   "${D}/usr/${abi_libdir}" || die
 	done
-
-	# temp fix for https://bugs.gentoo.org/672816
-	# FIXME: this should handle libdir=lib, not exact arches
-	if { use x86 || use arm; }; then
-		local rust_target wrongdir rightdir
-		rust_target=$(rust_abi $(get_abi_CHOST ${v##*.}))
-		wrongdir="${ED}/usr/$(get_libdir)/${P}/${P}/rustlib/${rust_target}/codegen-backends"
-		rightdir="${ED}/usr/$(get_libdir)/${P}/rustlib/${rust_target}/codegen-backends"
-		if [[ -e ${wrongdir}/librustc_codegen_llvm-llvm.so ]]; then
-			einfo "fixing bug #672816"
-			mv "${wrongdir}" "${rightdir}" || die
-			rm -r "${ED}/usr/$(get_libdir)/${P}/${P}" || die
-		fi
-	fi # end temp fix
 
 	dodoc COPYRIGHT
 
 	# FIXME:
 	# Really not sure if that env is needed, specailly LDPATH
 	cat <<-EOF > "${T}"/50${P}
-		LDPATH="${EPREFIX}/usr/$(get_libdir)/${P}"
-		MANPATH="${EPREFIX}/usr/share/${P}/man"
+		LDPATH="/usr/$(get_libdir)/${P}"
+		MANPATH="/usr/share/${P}/man"
 	EOF
 	doenvd "${T}"/50${P}
 
-	# note: eselect-rust adds EROOT to all paths below
 	cat <<-EOF > "${T}/provider-${P}"
 		/usr/bin/rustdoc
 		/usr/bin/rust-gdb
-		/usr/bin/rust-gdbgui
 		/usr/bin/rust-lldb
 	EOF
 	echo /usr/bin/cargo >> "${T}/provider-${P}"
