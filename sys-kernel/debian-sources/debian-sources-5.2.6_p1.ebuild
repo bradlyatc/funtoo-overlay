@@ -128,6 +128,11 @@ src_prepare() {
 	## FL-3381. enable IKCONFIG
 	epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-ikconfig.patch
 
+	## patch fpu functions back in for zfs
+	if use zfs ; then
+		epatch "${FILESDIR}"/${DEB_PV_BASE}/export_kernel_fpu_functions.patch
+	fi
+
 	local arch featureset subarch
 	featureset="standard"
 	if [[ ${REAL_ARCH} == x86 ]]; then
@@ -205,7 +210,7 @@ src_compile() {
 		--lvm \
 		--luks \
 		--mdadm \
-		$(usex btrfs --btrfs --nobtrfs) \
+		$(usex btrfs --btrfs --no-btrfs) \
 		$(usex zfs --zfs --no-zfs) \
 		--module-prefix="${WORKDIR}"/out \
 		all || die
