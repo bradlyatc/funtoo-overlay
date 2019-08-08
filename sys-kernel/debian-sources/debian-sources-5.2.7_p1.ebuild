@@ -12,9 +12,9 @@ inherit check-reqs eutils mount-boot
 SLOT=$PF
 CKV=${PV}
 KV_FULL=${PN}-${PVR}
-DEB_PV_BASE="4.19.37"
-DEB_EXTRAVERSION=-6
-EXTRAVERSION=_p6
+DEB_PV_BASE="5.2.7"
+DEB_EXTRAVERSION=-1
+EXTRAVERSION=_p1
 
 # install modules to /lib/modules/${DEB_PV_BASE}${EXTRAVERSION}-$MODULE_EXT
 MODULE_EXT=${EXTRAVERSION}
@@ -27,7 +27,7 @@ KERNEL_ARCHIVE="linux_${DEB_PV_BASE}.orig.tar.xz"
 PATCH_ARCHIVE="linux_${DEB_PV}.debian.tar.xz"
 RESTRICT="binchecks strip mirror"
 LICENSE="GPL-2"
-KEYWORDS=""
+KEYWORDS="*"
 IUSE="binary ec2 sign-modules btrfs zfs"
 DEPEND="binary? ( >=sys-kernel/genkernel-3.4.40.7 )
 	btrfs? ( sys-fs/btrfs-progs )
@@ -128,6 +128,9 @@ src_prepare() {
 	## FL-3381. enable IKCONFIG
 	epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-ikconfig.patch
 
+	## patch fpu functions back in for zfs
+	epatch "${FILESDIR}"/${DEB_PV_BASE}/export_kernel_fpu_functions.patch
+
 	local arch featureset subarch
 	featureset="standard"
 	if [[ ${REAL_ARCH} == x86 ]]; then
@@ -205,7 +208,7 @@ src_compile() {
 		--lvm \
 		--luks \
 		--mdadm \
-		$(usex btrfs --btrfs --nobtrfs) \
+		$(usex btrfs --btrfs --no-btrfs) \
 		$(usex zfs --zfs --no-zfs) \
 		--module-prefix="${WORKDIR}"/out \
 		all || die
