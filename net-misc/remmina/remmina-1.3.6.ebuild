@@ -13,12 +13,13 @@ SRC_URI="https://gitlab.com/Remmina/Remmina/-/archive/v${PV}/${MY_P}.tar.gz"
 
 LICENSE="GPL-2+-with-openssl-exception"
 SLOT="0"
-KEYWORDS="amd64 x86"
-IUSE="ayatana crypt examples gnome-keyring libressl nls spice ssh rdp telepathy vnc zeroconf"
+KEYWORDS="~amd64 ~x86"
+IUSE="ayatana crypt examples gnome-keyring kwallet libressl nls spice ssh rdp telepathy vnc webkit zeroconf"
 
 CDEPEND="
 	dev-libs/glib:2
 	dev-libs/json-glib
+	dev-libs/libsodium:=
 	net-libs/libsoup
 	x11-libs/gdk-pixbuf
 	x11-libs/gtk+:3
@@ -28,6 +29,7 @@ CDEPEND="
 	crypt? ( dev-libs/libgcrypt:0= )
 	rdp? ( >=net-misc/freerdp-2.0.0_rc4 )
 	gnome-keyring? ( app-crypt/libsecret )
+	kwallet? ( kde-frameworks/kwallet )
 	!libressl? ( dev-libs/openssl:0= )
 	libressl? ( dev-libs/libressl:0= )
 	spice? ( net-misc/spice-gtk[gtk3] )
@@ -35,6 +37,7 @@ CDEPEND="
 		x11-libs/vte:2.91 )
 	telepathy? ( net-libs/telepathy-glib )
 	vnc? ( net-libs/libvncserver[jpeg] )
+	webkit? ( net-libs/webkit-gtk:4 )
 	zeroconf? ( net-dns/avahi[gtk3] )
 "
 DEPEND="${CDEPEND}
@@ -56,6 +59,7 @@ src_configure() {
 		-DWITH_GCRYPT=$(usex crypt)
 		-DWITH_EXAMPLES=$(usex examples)
 		-DWITH_LIBSECRET=$(usex gnome-keyring)
+		-DWITH_KF5WALLET=$(usex kwallet)
 		-DWITH_GETTEXT=$(usex nls)
 		-DWITH_TRANSLATIONS=$(usex nls)
 		-DWITH_FREERDP=$(usex rdp)
@@ -64,7 +68,10 @@ src_configure() {
 		-DWITH_VTE=$(usex ssh)
 		-DWITH_TELEPATHY=$(usex telepathy)
 		-DWITH_LIBVNCSERVER=$(usex vnc)
+		-DWITH_WWW=$(usex webkit)
 		-DWITH_AVAHI=$(usex zeroconf)
+		-DWITH_ICON_CACHE=OFF
+		-DWITH_UPDATE_DESKTOP_DB=OFF
 	)
 	cmake-utils_src_configure
 }
