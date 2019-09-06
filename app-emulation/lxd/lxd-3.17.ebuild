@@ -7,7 +7,7 @@ DESCRIPTION="Fast, dense and secure container management"
 HOMEPAGE="https://linuxcontainers.org/lxd/introduction/"
 
 LICENSE="Apache-2.0 BSD BSD-2 LGPL-3 MIT MPL-2.0"
-SLOT="0"
+SLOT="${PV}"
 KEYWORDS="~amd64"
 
 IUSE="+daemon +ipv6 +dnsmasq nls test tools"
@@ -17,6 +17,8 @@ inherit autotools bash-completion-r1 linux-info systemd user
 SRC_URI="https://linuxcontainers.org/downloads/${PN}/${P}.tar.gz"
 
 DEPEND="
+	app-emulation/raft
+	app-emulation/libco
 	dev-lang/tcl
 	>=dev-lang/go-1.9.4
 	dev-libs/libuv
@@ -92,27 +94,27 @@ src_prepare() {
 	eapply_user
 	eapply "${FILESDIR}/de-translation-newline-1.patch"
 
-	cd "${S}/dist/dqlite" || die "Can't cd to dqlite dir"
+	cd "${S}/_dist/deps/dqlite" || die "Can't cd to dqlite dir"
 	eautoreconf
 }
 
 src_configure() {
-	export GOPATH="${S}/dist"
-	cd "${GOPATH}/sqlite" || die "Can't cd to sqlite dir"
+	export GOPATH="${S}/_dist"
+	cd "${GOPATH}/deps/sqlite" || die "Can't cd to sqlite dir"
 	econf --enable-replication --disable-amalgamation --disable-tcl --libdir="${EPREFIX}/usr/lib/lxd"
 
-	cd "${GOPATH}/dqlite" || die "Can't cd to dqlite dir"
-	PKG_CONFIG_PATH="${GOPATH}/sqlite/" econf --libdir=${EPREFIX}/usr/lib/lxd
+	cd "${GOPATH}/deps/dqlite" || die "Can't cd to dqlite dir"
+	PKG_CONFIG_PATH="${GOPATH}/deps/sqlite/" econf --libdir=${EPREFIX}/usr/lib/lxd
 }
 
 src_compile() {
-	export GOPATH="${S}/dist"
+	export GOPATH="${S}/_dist"
 
-	cd "${GOPATH}/sqlite" || die "Can't cd to sqlite dir"
+	cd "${GOPATH}/deps/sqlite" || die "Can't cd to sqlite dir"
 	emake
 
-	cd "${GOPATH}/dqlite" || die "Can't cd to dqlite dir"
-	emake CFLAGS="-I${GOPATH}/sqlite" LDFLAGS="-L${GOPATH}/sqlite"
+	cd "${GOPATH}/deps/dqlite" || die "Can't cd to dqlite dir"
+	emake CFLAGS="-I${GOPATH}/deps/sqlite" LDFLAGS="-L${GOPATH}/deps/sqlite"
 
 	# We don't use the Makefile here because it builds targets with the
 	# assumption that `pwd` is in a deep gopath namespace, which we're not.
@@ -124,9 +126,9 @@ src_compile() {
 
 		# LXD depends on a patched, bundled sqlite with replication
 		# capabilities.
-		export CGO_CFLAGS="-I${GOPATH}/sqlite/ -I${GOPATH}/dqlite/include/"
-		export CGO_LDFLAGS="-L${GOPATH}/sqlite/.libs/ -L${GOPATH}/dqlite/.libs/ -Wl,-rpath,${EPREFIX}/usr/lib/lxd"
-		export LD_LIBRARY_PATH="${GOPATH}/sqlite/.libs/:${GOPATH}/dqlite/.libs/"
+		export CGO_CFLAGS="-I${GOPATH}/deps/sqlite/ -I${GOPATH}/deps/dqlite/include/"
+		export CGO_LDFLAGS="-L${GOPATH}/deps/sqlite/.libs/ -L${GOPATH}/deps/dqlite/.libs/ -Wl,-rpath,${EPREFIX}/usr/lib/lxd"
+		export LD_LIBRARY_PATH="${GOPATH}/deps/sqlite/.libs/:${GOPATH}/deps/dqlite/.libs/"
 
 		go install -v -x -tags libsqlite3 ${EGO_PN}/lxd || die "Failed to build the daemon"
 	fi
@@ -143,7 +145,7 @@ src_compile() {
 
 src_test() {
 	if use daemon; then
-		export GOPATH="${S}/dist"
+		export GOPATH="${S}/_dist"
 		# This is mostly a copy/paste from the Makefile's "check" rule, but
 		# patching the Makefile to work in a non "fully-qualified" go namespace
 		# was more complicated than this modest copy/paste.
@@ -159,15 +161,15 @@ src_test() {
 }
 
 src_install() {
-	local bindir="dist/bin"
+	local bindir="_dist/bin"
 	dobin ${bindir}/lxc
 	if use daemon; then
 
-		export GOPATH="${S}/dist"
-		cd "${GOPATH}/sqlite" || die "Can't cd to sqlite dir"
+		export GOPATH="${S}/_dist"
+		cd "${GOPATH}/deps/sqlite" || die "Can't cd to sqlite dir"
 		emake DESTDIR="${D}" install
 
-		cd "${GOPATH}/dqlite" || die "Can't cd to dqlite dir"
+		cd "${GOPATH}/deps/dqlite" || die "Can't cd to dqlite dir"
 		emake DESTDIR="${D}" install
 
 		# Must only install libs
@@ -238,3 +240,4 @@ pkg_postinst() {
 # - maybe implement LXD_CLUSTER_UPDATE per
 #     https://discuss.linuxcontainers.org/t/lxd-3-5-has-been-released/2656
 #     EM I'm not convinced it's a good design.
+

@@ -16,6 +16,7 @@ SLOT="0"
 IUSE="apparmor examples pam seccomp selinux +templates"
 
 RDEPEND="
+	app-text/docbook2X
 	net-libs/gnutls
 	sys-libs/libcap
 	pam? ( virtual/pam )
