@@ -45,7 +45,7 @@ GCC_A="gcc-${GCC_ARCHIVE_VER}.tar.xz"
 SRC_URI="ftp://gcc.gnu.org/pub/gcc/releases/gcc-${GCC_ARCHIVE_VER}/${GCC_A}"
 
 # Backported fixes from gcc svn tree
-GCC_SVN_REV="275345"
+GCC_SVN_REV="275448"
 #GCC_SVN_REV=""
 GCC_SVN_PATCH_NAME="gcc-${GCC_ARCHIVE_VER}-to-svn-${GCC_SVN_REV}.patch"
 #GCC_SVN_PATCH_URI="https://fastpull-us.funtoo.org/distfiles/${GCC_SVN_PATCH_NAME}"
