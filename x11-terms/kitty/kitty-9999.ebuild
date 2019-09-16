@@ -35,7 +35,9 @@ DEPEND="${PYTHON_DEPS}
 	profile? ( dev-util/google-perftools )"
 RDEPEND="X? ( || ( x11-apps/xrdb x11-misc/xsel ) )
 	imagemagick? ( media-gfx/imagemagick )
-	pillow? ( dev-python/pillow )"
+	pillow? ( dev-python/pillow )
+	media-libs/libcanberra
+	dev-python/pygments"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 
