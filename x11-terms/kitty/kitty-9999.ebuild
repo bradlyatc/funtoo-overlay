@@ -27,6 +27,7 @@ CDEPEND="media-libs/fontconfig
 DEPEND="${PYTHON_DEPS}
 	sys-libs/zlib
 	virtual/pkgconfig
+	dev-python/sphinx
 	wayland? ( >=dev-libs/wayland-protocols-1.12 )
 	clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] )
 	clang_build? ( clang? ( sys-devel/clang:* sys-devel/llvm:*[gold] ) )
@@ -66,7 +67,7 @@ src_prepare() {
 
 	##fix libdir
 	sed -i "/libdir =/s/'lib'/'$(get_libdir)'/" setup.py || die
-	sed -i "s#/../lib/kitty#/../$(get_libdir)/kitty#" linux-launcher.c || die
+	#sed -i "s#/../lib/kitty#/../$(get_libdir)/kitty#" linux-launcher.c || die
 	##remove unwanted -Werror and -pedantic-errors flags if not debug build
 	if use !debug; then
 		sed -i -e 's/-Werror//g;s/-pedantic-errors/-pedantic/g' setup.py || die
