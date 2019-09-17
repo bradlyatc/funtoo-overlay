@@ -3,7 +3,7 @@
 EAPI=6
 PYTHON_COMPAT=( python3_{5,6,7} )
 
-inherit git-r3 gnome2-utils xdg-utils flag-o-matic toolchain-funcs distutils-r1
+inherit git-r3 gnome2-utils xdg-utils flag-o-matic toolchain-funcs python-single-r1
 
 DESCRIPTION="A modern, hackable, featureful, OpenGL based terminal emulator"
 HOMEPAGE="https://github.com/kovidgoyal/kitty"
@@ -40,6 +40,11 @@ RDEPEND="X? ( || ( x11-apps/xrdb x11-misc/xsel ) )
 	dev-python/pygments"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}"
+
+doecho() {
+	echo "$@"
+	"@" || die
+}
 
 pkg_setup() {
 	##setup a sane Clang build environment if clang_build is set
@@ -89,19 +94,19 @@ python_compile() {
 		einfo
 		elog "USE=debug detected: **DEBUG BUILD ENABLED**"
 		einfo
-		esetup.py -v --debug --libdir-name "${LIBDIR}" linux-package
+		doecho "${EPYTHON}" -v --debug --libdir-name "${LIBDIR}" linux-package
 	elif use sanitize && use clang && tc-is-clang; then
 		einfo
 		elog "USE=sanitize detected: **SANITIZE BUILD ENABLED**"
 		einfo
-		esetup.py -v --sanitize --libdir-name "${LIBDIR}" linux-package
+		doecho "${EPYTHON}" -v --sanitize --libdir-name "${LIBDIR}" linux-package
 	elif use profile; then
 		einfo
 		elog "USE=profile detected: **PROFILE BUILD ENABLED**"
 		einfo
-		esetup.py -v --profile --libdir-name "${LIBDIR}" linux-package
+		doecho "${EPYTHON}" -v --profile --libdir-name "${LIBDIR}" linux-package
 	else
-		esetup.py -v --libdir-name "${LIBDIR}" linux-package
+		doecho "${EPYTHON}" -v --libdir-name "${LIBDIR}" linux-package
 	fi
 }
 
@@ -110,6 +115,8 @@ src_install() {
 	dobin linux-package/bin/*
 	insinto /usr
 	doins -r linux-package/{$LIBDIR,share}
+
+	python_fix_shebang "${ED}"
 
 	DOCS=( *.asciidoc )
 	einstalldocs
