@@ -12,7 +12,7 @@ inherit check-reqs eutils mount-boot
 SLOT=$PF
 CKV=${PV}
 KV_FULL=${PN}-${PVR}
-DEB_PV_BASE="5.2.7"
+DEB_PV_BASE="5.2.17"
 DEB_EXTRAVERSION=-1
 EXTRAVERSION=_p1
 
@@ -28,10 +28,21 @@ PATCH_ARCHIVE="linux_${DEB_PV}.debian.tar.xz"
 RESTRICT="binchecks strip mirror"
 LICENSE="GPL-2"
 KEYWORDS="*"
-IUSE="binary ec2 sign-modules btrfs zfs"
-DEPEND="binary? ( >=sys-kernel/genkernel-3.4.40.7 )
-	btrfs? ( sys-fs/btrfs-progs )
-	zfs? ( sys-fs/zfs )"
+IUSE="binary btrfs custom-cflags ec2 luks lvm sign-modules zfs"
+DEPEND="
+	virtual/libelf
+	binary? ( >=sys-kernel/genkernel-3.4.40.7 )
+	btrfs? ( sys-fs/btrfs-progs sys-kernel/genkernel[btrfs] )
+	zfs? ( sys-fs/zfs )
+	luks? ( sys-kernel/genkernel[cryptsetup] )"
+REQUIRED_USE="
+btrfs? ( binary )
+custom-cflags? ( binary )
+luks? ( binary )
+lvm? ( binary )
+sign-modules? ( binary )
+zfs? ( binary )
+"
 DESCRIPTION="Debian Sources (and optional binary kernel)"
 DEB_UPSTREAM="http://http.debian.net/debian/pool/main/l/linux"
 HOMEPAGE="https://packages.debian.org/unstable/kernel/"
@@ -120,16 +131,13 @@ src_prepare() {
 	epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-xfs-libcrc32c-fix.patch
 
 	## FL-4424: enable legacy support for MCELOG.
-        epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-mcelog.patch
+	epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-mcelog.patch
 
 	## do not configure debian devs certs.
 	epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-nocerts.patch
 
 	## FL-3381. enable IKCONFIG
 	epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-ikconfig.patch
-
-	## patch fpu functions back in for zfs
-	epatch "${FILESDIR}"/${DEB_PV_BASE}/export_kernel_fpu_functions.patch
 
 	local arch featureset subarch
 	featureset="standard"
@@ -179,6 +187,14 @@ src_prepare() {
 		ewarn "To enable strict enforcement, YOU MUST add module.sig_enforce=1 as a kernel boot"
 		ewarn "parameter (to params in /etc/boot.conf, and re-run boot-update.)"
 		echo
+	fi
+	if use custom-cflags; then
+		MARCH="$(python -c "import portage; print(portage.settings[\"CFLAGS\"])" | sed 's/ /\n/g' | grep "march")"
+		if [ -n "$MARCH" ]; then
+			sed -i -e 's/-mtune=generic/$MARCH/g' arch/x86/Makefile || die "Canna optimize this kernel anymore, captain!"
+		else
+			die "Was unable to grab your -march setting from your Funtoo profile."
+		fi
 	fi
 	# get config into good state:
 	yes "" | make oldconfig >/dev/null 2>&1 || die
@@ -276,5 +292,8 @@ pkg_postinst() {
 
 	if [ -e ${ROOT}lib/modules ]; then
 		depmod -a $DEP_PV
+	fi
+	if [ -e /etc/boot.conf ]; then
+		ego boot update
 	fi
 }
