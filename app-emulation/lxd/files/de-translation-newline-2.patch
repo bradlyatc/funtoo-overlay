@@ -1,0 +1,18 @@
+diff -urN lxd-3.18.orig/po/de.po lxd-3.18/po/de.po
+--- lxd-3.18.orig/po/de.po	2019-10-05 09:04:58.804173802 +0200
++++ lxd-3.18/po/de.po	2019-10-05 09:10:16.411189620 +0200
+@@ -167,14 +166,14 @@
+ "###\n"
+ "### Each property is represented by a single line:\n"
+ "### An example would be:\n"
+-"###  description: My custom image"
++"###  description: My custom image\n"
+ msgstr ""
+ "### Dies ist eine Darstellung der Eigenschaften eines Images in yaml.\n"
+ "### Jede Zeile die mit '# beginnt wird ignoriert.\n"
+ "###\n"
+ "### Pro Eigenschaft wird eine Zeile verwendet:\n"
+ "### Zum Beispiel:\n"
+-"###  description: Mein eigenes Abbild"
++"###  description: Mein eigenes Abbild\n"
+
