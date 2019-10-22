@@ -13,7 +13,7 @@ HOMEPAGE="https://git.gnome.org/browse/gnome-settings-daemon"
 LICENSE="GPL-2+"
 SLOT="0"
 IUSE="+cups debug elogind +networkmanager smartcard systemd test +udev wayland"
-KEYWORDS="*"
+KEYWORDS=""
 
 REQUIRED_USE="
 	?? ( elogind systemd )

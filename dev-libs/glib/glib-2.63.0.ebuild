@@ -20,7 +20,7 @@ SRC_URI="${SRC_URI}
 LICENSE="LGPL-2.1+"
 SLOT="2"
 IUSE="dbus fam gtk-doc kernel_linux +mime selinux static-libs systemtap test xattr"
-KEYWORDS="*"
+KEYWORDS=""
 
 RDEPEND="
 	!<dev-util/gdbus-codegen-${PV}
