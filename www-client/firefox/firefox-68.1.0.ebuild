@@ -27,7 +27,7 @@ if [[ ${MOZ_ESR} == 1 ]] ; then
 fi
 
 # Patch version
-PATCH="${PN}-68.0-patches-11"
+PATCH="${PN}-68.0-patches-12"
 
 MOZ_HTTP_URI="https://archive.mozilla.org/pub/${PN}/releases"
 MOZ_SRC_URI="${MOZ_HTTP_URI}/${MOZ_PV}/source/firefox-${MOZ_PV}.source.tar.xz"
@@ -38,16 +38,16 @@ if [[ "${PV}" == *_rc* ]]; then
 	MOZ_SRC_URI="${MOZ_HTTP_URI}/source/${PN}-${MOZ_PV}.source.tar.xz -> $P.tar.xz"
 fi
 
-LLVM_MAX_SLOT=8
+LLVM_MAX_SLOT=9
 
 inherit check-reqs eapi7-ver flag-o-matic toolchain-funcs eutils \
 		gnome2-utils llvm mozcoreconf-v6 pax-utils xdg-utils \
-		autotools mozlinguas-v2 virtualx
+		autotools mozlinguas-v2 virtualx multiprocessing
 
 DESCRIPTION="Firefox Web Browser"
 HOMEPAGE="https://www.mozilla.com/firefox"
 
-KEYWORDS="amd64 ~arm64 ~ppc64 x86"
+KEYWORDS="amd64 arm64 ~ppc64 x86"
 
 SLOT="0"
 LICENSE="MPL-2.0 GPL-2 LGPL-2.1"
@@ -126,6 +126,15 @@ DEPEND="${CDEPEND}
 	sys-apps/findutils
 	|| (
 		(
+			sys-devel/clang:9
+			!clang? ( sys-devel/llvm:9 )
+			clang? (
+				=sys-devel/lld-9*
+				sys-devel/llvm:9[gold]
+				pgo? ( =sys-libs/compiler-rt-sanitizers-9*[profile] )
+			)
+		)
+		(
 			sys-devel/clang:8
 			!clang? ( sys-devel/llvm:8 )
 			clang? (
@@ -154,7 +163,6 @@ DEPEND="${CDEPEND}
 		)
 	)
 	pulseaudio? ( media-sound/pulseaudio )
-	>=virtual/cargo-1.34.0
 	>=virtual/rust-1.34.0
 	wayland? ( >=x11-libs/gtk+-3.11:3[wayland] )
 	amd64? ( >=dev-lang/yasm-1.1 virtual/opengl )
@@ -235,7 +243,7 @@ pkg_setup() {
 
 pkg_pretend() {
 	# Ensure we have enough disk space to compile
-	if use pgo || use debug || use test ; then
+	if use pgo || use lto || use debug || use test ; then
 		CHECKREQS_DISK_BUILD="8G"
 	else
 		CHECKREQS_DISK_BUILD="4G"
@@ -257,6 +265,12 @@ src_prepare() {
 
 	# Allow user to apply any additional patches without modifing ebuild
 	eapply_user
+
+	local n_jobs=$(makeopts_jobs)
+	if [[ ${n_jobs} == 1 ]]; then
+		einfo "Building with MAKEOPTS=-j1 is known to fail (bug #687028); Forcing MAKEOPTS=-j2 ..."
+		export MAKEOPTS=-j2
+	fi
 
 	# Enable gnomebreakpad
 	if use debug ; then
@@ -543,9 +557,6 @@ src_configure() {
 	mozconfig_annotate '' --with-google-safebrowsing-api-keyfile="${S}/google-api-key"
 
 	mozconfig_annotate '' --enable-extensions="${MEXTENSIONS}"
-
-	# disable webrtc for now, bug 667642
-	use arm && mozconfig_annotate 'broken on arm' --disable-webrtc
 
 	# allow elfhack to work in combination with unstripped binaries
 	# when they would normally be larger than 2GiB.
