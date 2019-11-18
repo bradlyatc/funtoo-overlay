@@ -7,7 +7,7 @@ PYTHON_COMPAT=( python3_{5,6,7} )
 VALA_MIN_API_VERSION="0.40"
 VALA_MAX_API_VERSION="0.40"
 
-inherit xdg meson python-single-r1 vala toolchain-funcs flag-o-matic
+inherit xdg meson python-single-r1 vala
 
 DESCRIPTION="Desktop Environment based on GNOME 3"
 HOMEPAGE="https://getsol.us/categories/budgie/"
@@ -78,17 +78,6 @@ DEPEND="
 
 	gtk-doc? ( dev-util/gtk-doc )
 "
-pkg_setup() {
-	CC="clang"
-	AR="llvm-ar"
-	NM="llvm-nm"
-	RANLIB="llvm-ranlib"
-	tc-export CC AR NM RANLIB
-	filter-flags -O3
-
-	append-cflags "-std=c17"
-	append-cxxflags "-std=c++17"
-}
 
 src_prepare() {
 	local desktop_files=$(find src/ -name *.desktop.in)

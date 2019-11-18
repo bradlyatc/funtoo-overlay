@@ -1,17 +1,24 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
+
+if [[ ${PV} = *9999* ]]; then
+	EGIT_BRANCH="v241-stable"
+	EGIT_REPO_URI="https://github.com/elogind/elogind.git"
+	inherit git-r3
+else
+	SRC_URI="https://github.com/${PN}/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~ia64 ~ppc ~ppc64 ~sparc ~x86"
+fi
 
 inherit linux-info meson pam udev xdg-utils
 
 DESCRIPTION="The systemd project's logind, extracted to a standalone package"
 HOMEPAGE="https://github.com/elogind/elogind"
-SRC_URI="https://github.com/${PN}/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="CC0-1.0 LGPL-2.1+ public-domain"
 SLOT="0"
-KEYWORDS="amd64 ~arm ~arm64 x86"
 IUSE="+acl debug doc +pam +policykit selinux"
 
 COMMON_DEPEND="
@@ -19,7 +26,7 @@ COMMON_DEPEND="
 	sys-libs/libcap
 	virtual/libudev:=
 	acl? ( sys-apps/acl )
-	pam? ( virtual/pam )
+	pam? ( sys-libs/pam )
 	selinux? ( sys-libs/libselinux )
 "
 DEPEND="${COMMON_DEPEND}
@@ -39,12 +46,9 @@ PDEPEND="
 	policykit? ( sys-auth/polkit )
 "
 
-DOCS=( src/libelogind/sd-bus/GVARIANT-SERIALIZATION )
+DOCS=( NEWS README.md src/libelogind/sd-bus/GVARIANT-SERIALIZATION )
 
-PATCHES=(
-	"${FILESDIR}/${PN}-238.1-docs.patch"
-	"${FILESDIR}/${P}-broken-test.patch" # bug 669862
-)
+PATCHES=( "${FILESDIR}/${P}-nodocs.patch" )
 
 pkg_setup() {
 	local CONFIG_CHECK="~CGROUPS ~EPOLL ~INOTIFY_USER ~SIGNALFD ~TIMERFD"
@@ -58,7 +62,7 @@ src_prepare() {
 }
 
 src_configure() {
-	local rccgroupmode="$(grep rc_cgroup_mode /etc/rc.conf | cut -d '"' -f 2)"
+	local rccgroupmode="$(grep rc_cgroup_mode \"${EPREFIX}/etc/rc.conf\" | cut -d '"' -f 2)"
 	local cgroupmode="legacy"
 
 	if [[ "xhybrid" = "x${rccgroupmode}" ]] ; then
@@ -71,7 +75,7 @@ src_configure() {
 		-Ddocdir="${EPREFIX}/usr/share/doc/${PF}"
 		-Dhtmldir="${EPREFIX}/usr/share/doc/${PF}/html"
 		-Dpamlibdir=$(getpam_mod_dir)
-		-Dudevrulesdir="$(get_udevdir)"/rules.d
+		-Dudevrulesdir="${EPREFIX}$(get_udevdir)"/rules.d
 		--libdir="${EPREFIX}"/usr/$(get_libdir)
 		-Drootlibdir="${EPREFIX}"/$(get_libdir)
 		-Drootlibexecdir="${EPREFIX}"/$(get_libdir)/elogind
@@ -87,6 +91,7 @@ src_configure() {
 		-Dhtml=$(usex doc auto false)
 		-Dpam=$(usex pam true false)
 		-Dselinux=$(usex selinux true false)
+		-Dutmp=$(usex elibc_musl false true)
 	)
 
 	meson_src_configure
