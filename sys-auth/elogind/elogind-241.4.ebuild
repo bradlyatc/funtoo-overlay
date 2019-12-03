@@ -3,15 +3,22 @@
 
 EAPI=7
 
+if [[ ${PV} = *9999* ]]; then
+	EGIT_BRANCH="v241-stable"
+	EGIT_REPO_URI="https://github.com/elogind/elogind.git"
+	inherit git-r3
+else
+	SRC_URI="https://github.com/${PN}/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~ia64 ~ppc ~ppc64 ~sparc ~x86"
+fi
+
 inherit linux-info meson pam udev xdg-utils
 
 DESCRIPTION="The systemd project's logind, extracted to a standalone package"
 HOMEPAGE="https://github.com/elogind/elogind"
-SRC_URI="https://github.com/${PN}/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="CC0-1.0 LGPL-2.1+ public-domain"
 SLOT="0"
-KEYWORDS="~alpha amd64 arm arm64 ~ia64 ppc ppc64 sparc x86"
 IUSE="+acl debug doc +pam +policykit selinux"
 
 COMMON_DEPEND="
@@ -39,9 +46,9 @@ PDEPEND="
 	policykit? ( sys-auth/polkit )
 "
 
-DOCS=( src/libelogind/sd-bus/GVARIANT-SERIALIZATION )
+DOCS=( NEWS README.md src/libelogind/sd-bus/GVARIANT-SERIALIZATION )
 
-PATCHES=( "${FILESDIR}/${PN}-241.1-docs.patch" )
+PATCHES=( "${FILESDIR}/${P}-nodocs.patch" )
 
 pkg_setup() {
 	local CONFIG_CHECK="~CGROUPS ~EPOLL ~INOTIFY_USER ~SIGNALFD ~TIMERFD"
