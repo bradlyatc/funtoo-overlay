@@ -8,7 +8,7 @@ DESCRIPTION="C implementation of the Raft consensus protocol"
 HOMEPAGE="https://github.com/canonical/raft"
 SRC_URI="https://github.com/canonical/raft/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
-LICENSE="Apache"
+LICENSE="LGPL-3-with-linking-exception"
 SLOT="0"
 KEYWORDS="x86 amd64"
 
