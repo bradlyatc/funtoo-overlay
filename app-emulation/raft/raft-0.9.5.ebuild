@@ -15,6 +15,7 @@ KEYWORDS="x86 amd64"
 DEPEND="dev-libs/libuv"
 
 IUSE="example"
+DOCS=( "README.md" )
 
 src_prepare() {
 	default
@@ -24,10 +25,4 @@ src_prepare() {
 src_configure() {
 	econf \
 		$(use_enable example)
-}
-
-src_install() {
-	emake DESTDIR="${D}" install
-
-	dodoc README.md
 }
