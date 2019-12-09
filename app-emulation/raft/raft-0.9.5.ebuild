@@ -10,19 +10,23 @@ SRC_URI="https://github.com/canonical/raft/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="LGPL-3-with-linking-exception"
 SLOT="0"
-KEYWORDS="x86 amd64"
+KEYWORDS="amd64 x86"
 
-DEPEND="dev-libs/libuv"
-
-IUSE="example"
+IUSE="btrfs debug example sanitize zfs"
+DEPEND=">=dev-libs/libuv-1.8.0
+	btrfs? ( sys-fs/btrfs-progs )
+	zfs? ( >=sys-fs/zfs-0.8.0 )
+"
 DOCS=( "README.md" )
 
 src_prepare() {
 	default
-	eautoreconf -i
+	eautoreconf
 }
 
 src_configure() {
 	econf \
-		$(use_enable example)
+	$(use_enable debug) \
+	$(use_enable example) \
+	$(use_enable sanitize)
 }
