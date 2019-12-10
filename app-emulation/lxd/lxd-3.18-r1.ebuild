@@ -53,8 +53,16 @@ RDEPEND="
 		virtual/acl
 	)
 "
+REVISION=$KV_MAJOR
+echo "$REVISION ***********************************************************************************"
+if [[ $REVISION -eq 5 ]]; then
+	CONFIG_CHECK="~NF_NAT_MASQUERADE"
+else
+	CONFIG_CHECK="~NF_NAT_MASQUERADE_IPV4 ~NF_NAT_MASQUERADE_IPV6"
+fi
 
 CONFIG_CHECK="
+	${CONFIG_CHECK}
 	~BRIDGE
 	~DUMMY
 	~IP6_NF_NAT
@@ -69,11 +77,6 @@ CONFIG_CHECK="
 	~NET_IPIP
 	~VXLAN
 "
-if [[ ${KV_MAJOR} == "5" ]]; then
-        CONFIG_CHECK="${CONFIG_CHECK} ~NF_NAT_MASQUERADE"
-else
-        CONFIG_CHECK="${CONFIG_CHECK} ~NF_NAT_MASQUERADE_IPV4 ~NF_NAT_MASQUERADE_IPV6"
-fi
 
 ERROR_BRIDGE="BRIDGE: needed for network commands"
 ERROR_DUMMY="DUMMY: needed for network commands"
@@ -87,14 +90,16 @@ ERROR_NETFILTER_XT_MATCH_COMMENT="NETFILTER_XT_MATCH_COMMENT: needed for network
 ERROR_NET_IPGRE="NET_IPGRE: needed for network commands"
 ERROR_NET_IPGRE_DEMUX="NET_IPGRE_DEMUX: needed for network commands"
 ERROR_NET_IPIP="NET_IPIP: needed for network commands"
-ERROR_NF_NAT_MASQUERADE_IPV4="NF_NAT_MASQUERADE_IPV4: needed for network commands"
-ERROR_NF_NAT_MASQUERADE_IPV6="NF_NAT_MASQUERADE_IPV6: needed for network commands"
 ERROR_VXLAN="VXLAN: needed for network commands"
 ERROR_NF_NAT_MASQUERADE="NF_NAT_MASQUERADE: needed for network commands"
+ERROR_NF_NAT_MASQUERADE_IPV4="NF_NAT_MASQUERADE_IPV4: needed for network commands"
+ERROR_NF_NAT_MASQUERADE_IPV6="NF_NAT_MASQUERADE_IPV6: needed for network commands"
 
 EGO_PN="github.com/lxc/lxd"
 
 src_prepare() {
+
+	echo "${KV_MAJOR} **********************************************"
 	eapply_user
 	eapply "${FILESDIR}/de-translation-newline-2.patch"
 
