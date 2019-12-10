@@ -67,10 +67,13 @@ CONFIG_CHECK="
 	~NET_IPGRE
 	~NET_IPGRE_DEMUX
 	~NET_IPIP
-	~NF_NAT_MASQUERADE_IPV4
-	~NF_NAT_MASQUERADE_IPV6
 	~VXLAN
 "
+if [[ ${KV_MAJOR} == "5" ]]; then
+        CONFIG_CHECK="${CONFIG_CHECK} ~NF_NAT_MASQUERADE"
+else
+        CONFIG_CHECK="${CONFIG_CHECK} ~NF_NAT_MASQUERADE_IPV4 ~NF_NAT_MASQUERADE_IPV6"
+fi
 
 ERROR_BRIDGE="BRIDGE: needed for network commands"
 ERROR_DUMMY="DUMMY: needed for network commands"
@@ -87,6 +90,7 @@ ERROR_NET_IPIP="NET_IPIP: needed for network commands"
 ERROR_NF_NAT_MASQUERADE_IPV4="NF_NAT_MASQUERADE_IPV4: needed for network commands"
 ERROR_NF_NAT_MASQUERADE_IPV6="NF_NAT_MASQUERADE_IPV6: needed for network commands"
 ERROR_VXLAN="VXLAN: needed for network commands"
+ERROR_NF_NAT_MASQUERADE="NF_NAT_MASQUERADE: needed for network commands"
 
 EGO_PN="github.com/lxc/lxd"
 
