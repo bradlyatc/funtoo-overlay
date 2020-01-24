@@ -1,21 +1,21 @@
-# Copyright 1999-2019 Gentoo Authors
+# Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
 
-inherit desktop xdg
+inherit desktop eutils xdg
 
 DESCRIPTION="Official desktop client for Telegram (binary package)"
 HOMEPAGE="https://desktop.telegram.org"
 SRC_URI="
 	https://github.com/telegramdesktop/tdesktop/archive/v${PV}.tar.gz -> tdesktop-${PV}.tar.gz
-	amd64? ( https://github.com/telegramdesktop/tdesktop/releases/download/v${PV}/tsetup.${PV}.tar.xz )
-	x86? ( https://github.com/telegramdesktop/tdesktop/releases/download/v${PV}/tsetup32.${PV}.tar.xz )
+	amd64? ( https://updates.tdesktop.com/tlinux/tsetup.${PV}.tar.xz )
+	x86? ( https://updates.tdesktop.com/tlinux32/tsetup32.${PV}.tar.xz )
 "
 
 LICENSE="GPL-3-with-openssl-exception"
 SLOT="0"
-KEYWORDS="*"
+KEYWORDS="-* ~amd64 ~x86"
 
 QA_PREBUILT="usr/lib/${PN}/Telegram"
 
@@ -45,19 +45,7 @@ src_install() {
 	domenu "${WORKDIR}/tdesktop-${PV}"/lib/xdg/telegramdesktop.desktop
 }
 
-pkg_preinst() {
-	xdg_pkg_preinst
-}
-
 pkg_postinst() {
 	xdg_pkg_postinst
-	einfo
-	einfo "Previous versions of ${PN} have created "
-	einfo "\"~/.local/share/applications/telegram.desktop\". These files"
-	einfo "conflict with the one shipped by portage and should be removed"
-	einfo "from all homedirs. (https://bugs.gentoo.org/618662)"
-}
-
-pkg_postrm() {
-	xdg_pkg_postrm
+	optfeature "spell checker support" app-text/enchant
 }
