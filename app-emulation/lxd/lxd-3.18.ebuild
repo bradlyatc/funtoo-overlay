@@ -1,4 +1,3 @@
-# Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -7,7 +6,7 @@ DESCRIPTION="Fast, dense and secure container management"
 HOMEPAGE="https://linuxcontainers.org/lxd/introduction/"
 
 LICENSE="Apache-2.0 BSD BSD-2 LGPL-3 MIT MPL-2.0"
-SLOT="${PV}"
+SLOT="0"
 KEYWORDS="~amd64"
 
 IUSE="+daemon +ipv6 +dnsmasq nls test tools"
@@ -17,7 +16,7 @@ inherit autotools bash-completion-r1 linux-info systemd user
 SRC_URI="https://linuxcontainers.org/downloads/${PN}/${P}.tar.gz"
 
 DEPEND="
-	app-emulation/raft
+	<app-emulation/raft-0.9.16
 	app-emulation/libco
 	dev-lang/tcl
 	>=dev-lang/go-1.9.4
@@ -33,6 +32,8 @@ DEPEND="
 
 RDEPEND="
 	daemon? (
+		app-emulation/raft
+		app-emulation/libco
 		app-arch/xz-utils
 		>=app-emulation/lxc-2.0.7[seccomp]
 		dev-libs/libuv
@@ -92,7 +93,6 @@ EGO_PN="github.com/lxc/lxd"
 
 src_prepare() {
 	eapply_user
-	eapply "${FILESDIR}/de-translation-newline-1.patch"
 
 	cd "${S}/_dist/deps/dqlite" || die "Can't cd to dqlite dir"
 	eautoreconf

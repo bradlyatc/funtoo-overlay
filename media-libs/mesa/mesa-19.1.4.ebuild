@@ -226,9 +226,10 @@ RDEPEND="${RDEPEND}"
 # 1. List all the working slots (with min versions) in ||, newest first.
 # 2. Update the := to specify *max* version, e.g. < 7.
 # 3. Specify LLVM_MAX_SLOT, e.g. 6.
-LLVM_MAX_SLOT=8
+LLVM_MAX_SLOT=9
 LLVM_DEPSTR="
 	|| (
+		sys-devel/llvm:9
 		sys-devel/llvm:8
 		sys-devel/llvm:7
 		>=sys-devel/llvm-6.0.1-r1
@@ -237,6 +238,7 @@ LLVM_DEPSTR="
 "
 LLVM_DEPSTR_AMDGPU="
 	|| (
+		sys-devel/llvm:9[llvm_targets_AMDGPU(-)]
 		sys-devel/llvm:8[llvm_targets_AMDGPU(-)]
 		sys-devel/llvm:7[llvm_targets_AMDGPU(-)]
 		>=sys-devel/llvm-6.0.1-r1[llvm_targets_AMDGPU(-)]
@@ -245,6 +247,7 @@ LLVM_DEPSTR_AMDGPU="
 "
 CLANG_DEPSTR="
 	|| (
+		sys-devel/llvm:9[clang(+)]
 		sys-devel/llvm:8[clang(+)]
 		sys-devel/llvm:7[clang(+)]
 		>=sys-devel/llvm-6.0.1-r1[clang(+)]
@@ -253,6 +256,7 @@ CLANG_DEPSTR="
 "
 CLANG_DEPSTR_AMDGPU="
 	|| (
+		sys-devel/llvm:9[clang(+),llvm_targets_AMDGPU(-)]
 		sys-devel/llvm:8[clang(+),llvm_targets_AMDGPU(-)]
 		sys-devel/llvm:7[clang(+),llvm_targets_AMDGPU(-)]
 		>=sys-devel/llvm-6.0.1-r1[clang(+),llvm_targets_AMDGPU(-)]

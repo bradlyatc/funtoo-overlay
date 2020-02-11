@@ -1,0 +1,11 @@
+--- lxd-3.19/po/de.po	2020-01-15 21:36:42.000000000 -0000
++++ lxd-fixed/po/de.po	2020-01-19 13:01:43.694274096 -0000
+@@ -125,7 +125,7 @@
+ "###\n"
+ "### Each property is represented by a single line:\n"
+ "### An example would be:\n"
+-"###  description: My custom image"
++"###  description: My custom image\n"
+ msgstr ""
+ "### Dies ist eine Darstellung der Eigenschaften eines Images in yaml.\n"
+ "### Jede Zeile die mit '# beginnt wird ignoriert.\n"
