@@ -32,7 +32,6 @@ S="${WORKDIR}/${PN}-${EGIT_COMMIT}"
 
 PATCHES=(
 	"${FILESDIR}/2.4.4-pulseaudio.patch"
-	"${FILESDIR}/musl.patch"
 )
 
 src_prepare() {

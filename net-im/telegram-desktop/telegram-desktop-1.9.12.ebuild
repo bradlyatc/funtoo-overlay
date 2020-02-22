@@ -16,12 +16,11 @@ SRC_URI="https://github.com/telegramdesktop/tdesktop/releases/download/v${PV}/${
 LICENSE="GPL-3-with-openssl-exception"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc64"
-IUSE="alsa dbus gtk3 libressl pulseaudio spell"
+IUSE="+alsa dbus libressl pulseaudio spell"
 
-# dbus still required to build, but use flag disables dbus usage at runtime
-# pkg-config will pick up gtk2 first if found, needs a workaround
-RDEPEND="!net-im/telegram-desktop-bin
-	app-arch/lz4
+RDEPEND="
+	!net-im/telegram-desktop-bin
+	app-arch/lz4:=
 	app-arch/xz-utils
 	!libressl? ( dev-libs/openssl:0= )
 	libressl? ( dev-libs/libressl:0= )
@@ -33,44 +32,45 @@ RDEPEND="!net-im/telegram-desktop-bin
 	dev-qt/qtdbus:5
 	dev-qt/qtimageformats:5
 	dev-qt/qtnetwork:5
+	dev-qt/qtsvg:5
 	media-libs/fontconfig:=
 	media-libs/libtgvoip[alsa?,pulseaudio?]
 	media-libs/openal[alsa?,pulseaudio?]
+	media-libs/opus:=
+	media-video/ffmpeg:=[opus]
 	sys-libs/zlib[minizip]
-	virtual/ffmpeg
 	virtual/libiconv
-	x11-libs/libva[X,drm]
+	x11-libs/libva:=[X,drm]
 	x11-libs/libX11
 	|| (
-		dev-qt/qtgui:5[png,X(-)]
-		dev-qt/qtgui:5[png,xcb(-)]
+		dev-qt/qtgui:5[jpeg,png,X(-)]
+		dev-qt/qtgui:5[jpeg,png,xcb(-)]
 	)
 	|| (
 		dev-qt/qtwidgets:5[png,X(-)]
 		dev-qt/qtwidgets:5[png,xcb(-)]
 	)
-	gtk3? (
-		dev-libs/libappindicator:3
-		x11-libs/gtk+:3
-	)
 	pulseaudio? ( media-sound/pulseaudio )
 	spell? ( app-text/enchant:= )
 "
 
-DEPEND="${RDEPEND}
-	${PYTHON_DEPS}"
+DEPEND="
+	${PYTHON_DEPS}
+	${RDEPEND}
+"
 
 BDEPEND="
 	>=dev-util/cmake-3.16
 	virtual/pkgconfig
 "
+
 REQUIRED_USE="|| ( alsa pulseaudio )"
 
 S="${WORKDIR}/${MY_P}"
 
 PATCHES=(
 	"${FILESDIR}/0002-PPC-big-endian.patch"
-	"${FILESDIR}/musl.patch"
+	#"${FILESDIR}/${PV}-dbus.patch"
 )
 
 src_configure() {
@@ -86,7 +86,6 @@ src_configure() {
 	# it fals with tl-expected-1.0.0, so we use bundled for now to avoid git rev snapshots
 	# EXPECTED VARIANT
 	local mycmakeargs=(
-		-Ddisable_autoupdate=1
 		-DDESKTOP_APP_DISABLE_CRASH_REPORTS=ON
 		-DDESKTOP_APP_USE_GLIBC_WRAPS=OFF
 		-DDESKTOP_APP_USE_PACKAGED=ON
@@ -96,9 +95,7 @@ src_configure() {
 		-DTDESKTOP_DISABLE_DESKTOP_FILE_GENERATION=ON
 		-DTDESKTOP_LAUNCHER_BASENAME="${PN}"
 		-DDESKTOP_APP_DISABLE_SPELLCHECK="$(usex spell OFF ON)"
-		-DTDESKTOP_DISABLE_GTK_INTEGRATION="$(usex gtk3 OFF ON)"
 		-DTDESKTOP_DISABLE_DBUS_INTEGRATION="$(usex dbus OFF ON)"
-		-DTDESKTOP_FORCE_GTK_FILE_DIALOG="$(usex gtk3)"
 	)
 
 	if [[ -n ${MY_TDESKTOP_API_ID} && -n ${MY_TDESKTOP_API_HASH} ]]; then

@@ -13,59 +13,64 @@ DESCRIPTION="Official desktop client for Telegram"
 HOMEPAGE="https://desktop.telegram.org"
 SRC_URI="https://github.com/telegramdesktop/tdesktop/releases/download/v${PV}/${MY_P}.tar.gz"
 
-LICENSE="GPL-3-with-openssl-exception Unlicense"
+LICENSE="GPL-3-with-openssl-exception"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc64"
-IUSE="dbus gtk3 libressl spell"
+IUSE="+alsa dbus libressl pulseaudio spell"
 
-RDEPEND="!net-im/telegram-desktop-bin
-	app-arch/lz4
+RDEPEND="
+	!net-im/telegram-desktop-bin
+	app-arch/lz4:=
 	app-arch/xz-utils
 	!libressl? ( dev-libs/openssl:0= )
 	libressl? ( dev-libs/libressl:0= )
+	>=dev-cpp/ms-gsl-2.1.0
 	dev-cpp/range-v3
+	dev-libs/libdbusmenu-qt[qt5(+)]
 	dev-libs/xxhash
 	dev-qt/qtcore:5
+	dev-qt/qtdbus:5
 	dev-qt/qtimageformats:5
 	dev-qt/qtnetwork:5
-	media-libs/openal[pulseaudio]
-	media-libs/opus
-	media-sound/pulseaudio
+	dev-qt/qtsvg:5
+	media-libs/fontconfig:=
+	>=media-libs/libtgvoip-2.4.4_p20200212[alsa?,pulseaudio?]
+	media-libs/openal[alsa?,pulseaudio?]
+	media-libs/opus:=
+	media-video/ffmpeg:=[opus]
 	sys-libs/zlib[minizip]
-	virtual/ffmpeg
-	x11-libs/libva[X,drm]
+	virtual/libiconv
+	x11-libs/libva:=[X,drm]
 	x11-libs/libX11
 	|| (
-		dev-qt/qtgui:5[png,X(-)]
-		dev-qt/qtgui:5[png,xcb(-)]
+		dev-qt/qtgui:5[jpeg,png,X(-)]
+		dev-qt/qtgui:5[jpeg,png,xcb(-)]
 	)
 	|| (
 		dev-qt/qtwidgets:5[png,X(-)]
 		dev-qt/qtwidgets:5[png,xcb(-)]
 	)
-	dbus? ( dev-qt/qtdbus:5 )
-	gtk3? (
-		dev-libs/libappindicator:3
-		x11-libs/gtk+:3
-	)
+	pulseaudio? ( media-sound/pulseaudio )
 	spell? ( app-text/enchant:= )
 "
 
-DEPEND="${RDEPEND}
-	${PYTHON_DEPS}"
+DEPEND="
+	${PYTHON_DEPS}
+	${RDEPEND}
+"
 
 BDEPEND="
 	>=dev-util/cmake-3.16
 	virtual/pkgconfig
 "
 
-PATCHES=(
-	"${FILESDIR}/0002-PPC-big-endian.patch"
-	"${FILESDIR}/0003-PPC-config.patch"
-	"${FILESDIR}/musl.patch"
-)
+REQUIRED_USE="|| ( alsa pulseaudio )"
 
 S="${WORKDIR}/${MY_P}"
+
+PATCHES=(
+	"${FILESDIR}/0002-PPC-big-endian.patch"
+)
 
 src_configure() {
 	local mycxxflags=(
@@ -76,19 +81,20 @@ src_configure() {
 
 	append-cxxflags "${mycxxflags[@]}"
 
+	# TODO: unbundle header-only libs, ofc telegram uses git versions...
+	# it fals with tl-expected-1.0.0, so we use bundled for now to avoid git rev snapshots
+	# EXPECTED VARIANT
 	local mycmakeargs=(
-		-Ddisable_autoupdate=1
 		-DDESKTOP_APP_DISABLE_CRASH_REPORTS=ON
 		-DDESKTOP_APP_USE_GLIBC_WRAPS=OFF
 		-DDESKTOP_APP_USE_PACKAGED=ON
+		-DDESKTOP_APP_USE_PACKAGED_EXPECTED=OFF
 		-DDESKTOP_APP_USE_PACKAGED_RLOTTIE=OFF
+		-DDESKTOP_APP_USE_PACKAGED_VARIANT=OFF
 		-DTDESKTOP_DISABLE_DESKTOP_FILE_GENERATION=ON
 		-DTDESKTOP_LAUNCHER_BASENAME="${PN}"
-		-DTDESKTOP_USE_PACKAGED_TGVOIP=OFF
 		-DDESKTOP_APP_DISABLE_SPELLCHECK="$(usex spell OFF ON)"
-		-DTDESKTOP_DISABLE_GTK_INTEGRATION="$(usex gtk3 OFF ON)"
 		-DTDESKTOP_DISABLE_DBUS_INTEGRATION="$(usex dbus OFF ON)"
-		-DTDESKTOP_FORCE_GTK_FILE_DIALOG="$(usex gtk3)"
 	)
 
 	if [[ -n ${MY_TDESKTOP_API_ID} && -n ${MY_TDESKTOP_API_HASH} ]]; then
@@ -114,24 +120,6 @@ src_configure() {
 	fi
 
 	cmake_src_configure
-}
-
-src_install() {
-	dobin "${BUILD_DIR}/bin/${PN}"
-
-	newmenu lib/xdg/telegramdesktop.desktop "${PN}.desktop"
-
-	local icon_size
-	for icon_size in 16 32 48 64 128 256 512
-	do
-		newicon -s ${icon_size} \
-			Telegram/Resources/art/icon${icon_size}.png telegram.png
-	done
-
-	insinto /usr/share/appdata
-	doins lib/xdg/telegramdesktop.appdata.xml
-
-	einstalldocs
 }
 
 pkg_postinst() {
