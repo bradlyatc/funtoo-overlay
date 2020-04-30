@@ -3,7 +3,7 @@
 # Documentation for adding new kernels -- do not remove!
 #
 # Find latest stable kernel release for debian here:
-#   https://packages.debian.org/unstable/kernel/
+#   https://packages.debian.org/stable/kernel/
 
 EAPI=5
 
@@ -12,9 +12,9 @@ inherit check-reqs eutils mount-boot
 SLOT=$PF
 CKV=${PV}
 KV_FULL=${PN}-${PVR}
-DEB_PV_BASE="5.6.4"
-DEB_EXTRAVERSION="-1~exp1"
-EXTRAVERSION="_p1"
+DEB_PV_BASE="4.19.118"
+DEB_EXTRAVERSION="-2"
+EXTRAVERSION="_p2"
 
 # install modules to /lib/modules/${DEB_PV_BASE}${EXTRAVERSION}-$MODULE_EXT
 MODULE_EXT=${EXTRAVERSION}
@@ -45,7 +45,7 @@ zfs? ( binary )
 "
 DESCRIPTION="Debian Sources (and optional binary kernel)"
 DEB_UPSTREAM="http://http.debian.net/debian/pool/main/l/linux"
-HOMEPAGE="https://packages.debian.org/unstable/kernel/"
+HOMEPAGE="https://packages.debian.org/stable/kernel/"
 SRC_URI="$DEB_UPSTREAM/${KERNEL_ARCHIVE} $DEB_UPSTREAM/${PATCH_ARCHIVE}"
 S="$WORKDIR/linux-${DEB_PV_BASE}"
 
@@ -141,7 +141,14 @@ src_prepare() {
 
 	## increase bluetooth polling patch
 	epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-fix-bluetooth-polling.patch
-	epatch "${FILESDIR}"/${DEB_PV_BASE}/export_kernel_fpu_functions_5_3.patch
+
+	## add support for newer AMD APUs to AMDGPU
+	epatch "${FILESDIR}"/${DEB_PV_BASE}/amdgpu-picasso.patch
+
+	## fix for USB device enumeration for USBPre2:
+	## does not apply cleanly and may have been fixed as of 4.19.118 needs looking into
+	##epatch "${FILESDIR}/${DEB_PV_BASE}/usb-blacklist-endpoint-sound-devices-usbpre2.patch"
+
 	local arch featureset subarch
 	featureset="standard"
 	if [[ ${REAL_ARCH} == x86 ]]; then
