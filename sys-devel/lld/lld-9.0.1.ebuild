@@ -19,7 +19,7 @@ RESTRICT="!test? ( test )"
 
 RDEPEND="~sys-devel/llvm-${PV}"
 DEPEND="${RDEPEND}"
-BDEPEND="test? ( $(python_gen_any_dep "~dev-python/lit-${PV}[\${PYTHON_USEDEP}]") )"
+BDEPEND="test? ( "~dev-python/lit-${PV}[\${PYTHON_USEDEP}]"
 
 # least intrusive of all
 CMAKE_BUILD_TYPE=RelWithDebInfo
