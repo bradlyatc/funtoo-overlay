@@ -5,7 +5,7 @@ EAPI=7
 
 PYTHON_COMPAT=( python3_{6,7,8} )
 
-inherit flag-o-matic meson multilib-minimal python-any-r1 xdg-utils
+inherit flag-o-matic meson python-any-r1 xdg-utils
 
 DESCRIPTION="An OpenType text shaping engine"
 HOMEPAGE="https://www.freedesktop.org/wiki/Software/HarfBuzz"
@@ -27,11 +27,11 @@ REQUIRED_USE="introspection? ( glib )"
 
 RDEPEND="
 	cairo? ( x11-libs/cairo:= )
-	glib? ( >=dev-libs/glib-2.38:2[${MULTILIB_USEDEP}] )
-	graphite? ( >=media-gfx/graphite2-1.2.1:=[${MULTILIB_USEDEP}] )
-	icu? ( >=dev-libs/icu-51.2-r1:=[${MULTILIB_USEDEP}] )
+	glib? ( >=dev-libs/glib-2.38:2 )
+	graphite? ( >=media-gfx/graphite2-1.2.1:= )
+	icu? ( >=dev-libs/icu-51.2-r1:= )
 	introspection? ( >=dev-libs/gobject-introspection-1.34:= )
-	truetype? ( >=media-libs/freetype-2.5.0.1:2=[${MULTILIB_USEDEP}] )
+	truetype? ( >=media-libs/freetype-2.5.0.1:2= )
 "
 DEPEND="${RDEPEND}
 	>=dev-libs/gobject-introspection-common-1.34
@@ -64,22 +64,14 @@ src_prepare() {
 	append-cxxflags -std=c++14
 }
 
-meson_multilib_native_feature() {
-	if multilib_is_native_abi && use "$1" ; then
-		echo "enabled"
-	else
-		echo "disabled"
-	fi
-}
-
-multilib_src_configure() {
+meson_src_configure() {
 	# harfbuzz-gobject only used for instrospection, bug #535852
 	local emesonargs=(
-		-Dcairo="$(meson_multilib_native_feature cairo)"
+		-Dcairo="$(usex cairo enabled disabled)"
 		-Dcoretext="disabled"
-		-Ddocs="$(meson_multilib_native_feature doc)"
+		-Ddocs="$(usex doc enabled disabled)"
 		-Dfontconfig="disabled" #609300
-		-Dintrospection="$(meson_multilib_native_feature introspection)"
+		-Dintrospection="$(usex introspection enabled disabled)"
 		-Dstatic="$(usex static-libs true false)"
 		$(meson_feature glib)
 		$(meson_feature graphite)
@@ -87,18 +79,5 @@ multilib_src_configure() {
 		$(meson_feature introspection gobject)
 		$(meson_feature test tests)
 		$(meson_feature truetype freetype)
-	)
-	meson_src_configure
-}
-
-multilib_src_compile() {
-	meson_src_compile
-}
-
-multilib_src_install() {
-	meson_src_install
-}
-
-multilib_src_install_all() {
-	einstalldocs
+		)
 }
