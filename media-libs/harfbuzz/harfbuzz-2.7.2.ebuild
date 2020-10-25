@@ -1,4 +1,3 @@
-# Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -10,13 +9,8 @@ inherit flag-o-matic meson python-any-r1 xdg-utils
 DESCRIPTION="An OpenType text shaping engine"
 HOMEPAGE="https://www.freedesktop.org/wiki/Software/HarfBuzz"
 
-if [[ ${PV} = 9999 ]] ; then
-	EGIT_REPO_URI="https://github.com/harfbuzz/harfbuzz.git"
-	inherit git-r3
-else
-	SRC_URI="https://github.com/${PN}/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
-	KEYWORDS="~alpha amd64 arm arm64 hppa ~ia64 ~mips ppc ppc64 ~s390 sparc x86 ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x64-solaris ~x86-solaris"
-fi
+SRC_URI="https://github.com/${PN}/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
+KEYWORDS="*"
 
 LICENSE="Old-MIT ISC icu"
 SLOT="0/0.9.18" # 0.9.18 introduced the harfbuzz-icu split; bug #472416
@@ -64,20 +58,21 @@ src_prepare() {
 	append-cxxflags -std=c++14
 }
 
-meson_src_configure() {
+src_configure() {
 	# harfbuzz-gobject only used for instrospection, bug #535852
 	local emesonargs=(
-		-Dcairo="$(usex cairo enabled disabled)"
+		$(meson_feature cairo)
 		-Dcoretext="disabled"
-		-Ddocs="$(usex doc enabled disabled)"
+		$(meson_feature doc docs)
 		-Dfontconfig="disabled" #609300
-		-Dintrospection="$(usex introspection enabled disabled)"
-		-Dstatic="$(usex static-libs true false)"
+		$(meson_feature introspection)
+		$(meson_use static-libs static)
 		$(meson_feature glib)
 		$(meson_feature graphite)
 		$(meson_feature icu)
 		$(meson_feature introspection gobject)
 		$(meson_feature test tests)
 		$(meson_feature truetype freetype)
-		)
+	)
+	meson_src_configure
 }
