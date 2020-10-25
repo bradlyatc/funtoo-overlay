@@ -3,7 +3,7 @@
 
 EAPI=7
 
-inherit flag-o-matic multilib toolchain-funcs multilib-minimal
+inherit flag-o-matic multilib toolchain-funcs
 
 NSPR_VER="4.29"
 RTM_NAME="NSS_${PV//./_}_RTM"
@@ -19,9 +19,9 @@ KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~s
 IUSE="cacert utils"
 # pkg-config called by nss-config -> virtual/pkgconfig in RDEPEND
 RDEPEND="
-	>=dev-libs/nspr-${NSPR_VER}[${MULTILIB_USEDEP}]
-	>=dev-db/sqlite-3.8.2[${MULTILIB_USEDEP}]
-	>=sys-libs/zlib-1.2.8-r1[${MULTILIB_USEDEP}]
+	>=dev-libs/nspr-${NSPR_VER}
+	>=dev-db/sqlite-3.8.2
+	>=sys-libs/zlib-1.2.8-r1
 	virtual/pkgconfig
 "
 DEPEND="${RDEPEND}"
@@ -81,12 +81,10 @@ src_prepare() {
 	sed -i -e "/CRYPTOLIB/s:\$(SOFTOKEN_LIB_DIR):../../lib/freebl/\$(OBJDIR):" \
 		cmd/platlibs.mk || die
 
-	multilib_copy_sources
-
 	strip-flags
 }
 
-multilib_src_configure() {
+src_configure() {
 	# Ensure we stay multilib aware
 	sed -i -e "/@libdir@/ s:lib64:$(get_libdir):" config/Makefile || die
 }
@@ -120,7 +118,7 @@ nssbits() {
 	esac
 }
 
-multilib_src_compile() {
+src_compile() {
 	# use ABI to determine bit'ness, or fallback if unset
 	local buildbits mybits
 	case "${ABI}" in
@@ -237,7 +235,7 @@ cleanup_chk() {
 	done
 }
 
-multilib_src_install() {
+src_install() {
 	pushd dist >/dev/null || die
 
 	dodir /usr/$(get_libdir)
@@ -272,8 +270,7 @@ multilib_src_install() {
 	# Always enabled because we need it for chk generation.
 	nssutils=( shlibsign )
 
-	if multilib_is_native_abi ; then
-		if use utils; then
+	if use utils; then
 			# The tests we do not need to install.
 			#nssutils_test="bltest crmftest dbtest dertimetest
 			#fipstest remtest sdrtest"
@@ -326,7 +323,7 @@ multilib_src_install() {
 			dobin ${f}
 		done
 		popd >/dev/null || die
-	fi
+
 
 	# Prelink breaks the CHK files. We don't have any reliable way to run
 	# shlibsign after prelink.
@@ -336,7 +333,6 @@ multilib_src_install() {
 }
 
 pkg_postinst() {
-	multilib_pkg_postinst() {
 		# We must re-sign the libraries AFTER they are stripped.
 		local shlibsign="${EROOT}/usr/bin/shlibsign"
 		# See if we can execute it (cross-compiling & such). #436216
@@ -345,15 +341,9 @@ pkg_postinst() {
 			shlibsign="shlibsign"
 		fi
 		generate_chk "${shlibsign}" "${EROOT}"/usr/$(get_libdir)
-	}
 
-	multilib_foreach_abi multilib_pkg_postinst
 }
 
 pkg_postrm() {
-	multilib_pkg_postrm() {
 		cleanup_chk "${EROOT}"/usr/$(get_libdir)
-	}
-
-	multilib_foreach_abi multilib_pkg_postrm
 }
