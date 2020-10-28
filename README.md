@@ -5,6 +5,7 @@
 * Clang and LLVM to 11.0.0
 * Rust bumped to version 1.47
 * Lastest Kitty
+* Bumped Intel-Microcode
 * Newest Mesa and Libdrm
 * Telegram-Desktop built from source up to date
 * Nerdfonts and Jetbrains-Mono updated
