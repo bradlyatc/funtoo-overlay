@@ -9,6 +9,7 @@
 * Newest Mesa and Libdrm
 * Telegram-Desktop built from source up to date
 * Nerdfonts and Jetbrains-Mono updated
+* Up to date FreeRDP and Remmina
 * many many many more updates and packages	      
 
 ### To use this overlay please do the following on Funtoo:
