@@ -12,9 +12,9 @@ inherit check-reqs eutils mount-boot
 SLOT=$PF
 CKV=${PV}
 KV_FULL=${PN}-${PVR}
-DEB_PV_BASE="5.9.1"
-DEB_EXTRAVERSION="-1"
-EXTRAVERSION="_p1"
+DEB_PV_BASE="4.19.67"
+DEB_EXTRAVERSION="-2+deb10u2~bpo9+1"
+EXTRAVERSION="_p2"
 
 # install modules to /lib/modules/${DEB_PV_BASE}${EXTRAVERSION}-$MODULE_EXT
 MODULE_EXT=${EXTRAVERSION}
@@ -140,10 +140,7 @@ src_prepare() {
 	epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-ikconfig.patch
 
 	## increase bluetooth polling patch
-	#epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-fix-bluetooth-polling.patch
-	epatch "${FILESDIR}"/${DEB_PV_BASE}/export_kernel_fpu_functions_5_3.patch
-
-	epatch "${FILESDIR}"/${DEB_PV_BASE}/extra-cpu-optimizations.patch
+	epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-4.19.67-fix-bluetooth-polling.patch
 
 	local arch featureset subarch
 	featureset="standard"

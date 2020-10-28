@@ -12,9 +12,9 @@ inherit check-reqs eutils mount-boot
 SLOT=$PF
 CKV=${PV}
 KV_FULL=${PN}-${PVR}
-DEB_PV_BASE="5.9.1"
-DEB_EXTRAVERSION="-1"
-EXTRAVERSION="_p1"
+DEB_PV_BASE="5.2.17"
+DEB_EXTRAVERSION=-1
+EXTRAVERSION=_p1
 
 # install modules to /lib/modules/${DEB_PV_BASE}${EXTRAVERSION}-$MODULE_EXT
 MODULE_EXT=${EXTRAVERSION}
@@ -139,12 +139,6 @@ src_prepare() {
 	## FL-3381. enable IKCONFIG
 	epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-ikconfig.patch
 
-	## increase bluetooth polling patch
-	#epatch "${FILESDIR}"/${DEB_PV_BASE}/${PN}-${DEB_PV_BASE}-fix-bluetooth-polling.patch
-	epatch "${FILESDIR}"/${DEB_PV_BASE}/export_kernel_fpu_functions_5_3.patch
-
-	epatch "${FILESDIR}"/${DEB_PV_BASE}/extra-cpu-optimizations.patch
-
 	local arch featureset subarch
 	featureset="standard"
 	if [[ ${REAL_ARCH} == x86 ]]; then
@@ -198,6 +192,8 @@ src_prepare() {
 		MARCH="$(python -c "import portage; print(portage.settings[\"CFLAGS\"])" | sed 's/ /\n/g' | grep "march")"
 		if [ -n "$MARCH" ]; then
 			sed -i -e 's/-mtune=generic/$MARCH/g' arch/x86/Makefile || die "Canna optimize this kernel anymore, captain!"
+		else
+			die "Was unable to grab your -march setting from your Funtoo profile."
 		fi
 	fi
 	# get config into good state:
@@ -225,8 +221,8 @@ src_compile() {
 		--logfile="${WORKDIR}"/genkernel.log \
 		--bootdir="${WORKDIR}"/out/boot \
 		--disklabel \
-		$(usex lvm --lvm --no-lvm ) \
-		$(usex luks --luks --no-luks ) \
+		--lvm \
+		--luks \
 		--mdadm \
 		$(usex btrfs --btrfs --no-btrfs) \
 		$(usex zfs --zfs --no-zfs) \
