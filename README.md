@@ -1,9 +1,10 @@
 # Funtoo-Overlay
 
-* Firefox from source has been updated to 82.0.1
+* Firefox from source has been updated to 82.0.2
 * Debian-Sources updated to 5.9.1-1
 * Clang and LLVM to 11.0.0
 * Rust bumped to version 1.47
+* ICU and Node.js are updated
 * Lastest Kitty
 * Bumped Intel-Microcode
 * Newest Mesa and Libdrm
