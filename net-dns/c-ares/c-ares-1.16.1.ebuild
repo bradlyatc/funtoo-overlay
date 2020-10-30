@@ -2,8 +2,6 @@
 
 EAPI=7
 
-inherit autotools eutils
-
 DESCRIPTION="C library that resolves names asynchronously"
 HOMEPAGE="https://c-ares.haxx.se/"
 SRC_URI="https://${PN}.haxx.se/download/${P}.tar.gz"
