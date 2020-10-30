@@ -16,12 +16,7 @@ IUSE="static-libs"
 SLOT="0/2"
 
 DOCS=( AUTHORS CHANGES NEWS README.md RELEASE-NOTES TODO )
-
-src_prepare() {
-	eapply "${FILESDIR}"/${PN}-1.12.0-remove-tests.patch
-	eapply_user
-	eautoreconf
-}
+PATCHES=( "${FILESDIR}"/${PN}-1.12.0-remove-tests.patch )
 
 src_configure() {
 	ECONF_SOURCE=${S} \
